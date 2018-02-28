@@ -1,11 +1,10 @@
 <template>
   <view class="container">
+    <view class="top-box">
     <image class="logo" src="{{userInfo.avatarUrl}}" />
-    <text class="level">入戏三分</text>
-    <view class="remind-box" wx:if="{{remind}}">
-      <image class="remind-img" src="/images/loading.gif"/>
+    <text class="level">称号：入戏三分</text>
     </view>
-    <block wx:else>
+    <block>
       <view class="content">
         <view class="hd" style="transform:rotateZ({{angle}}deg);">
           <image class="wave" src="/images/wave.png" mode="aspectFill" />
@@ -29,7 +28,7 @@ export default class Index extends wepy.page {
     navigationBarTitleText: '',
     enablePullDownRefresh: false,
     disableScroll: true,
-    navigationBarBackgroundColor: '@green'
+    navigationBarBackgroundColor: '#69c3aa'
   };
 
   data = {
@@ -117,7 +116,7 @@ page {
   justify-content: center;
   width: 100%;
   height: 100%;
-  margin-top: -200rpx;
+  margin-top: -300rpx;
   padding-bottom: 500rpx;
   background: -webkit-gradient(
     linear,
@@ -132,18 +131,12 @@ page {
   animation: rise 3s cubic-bezier(0.19, 1, 0.22, 1) 0.25s forwards;
 }
 
-.remind-box {
+.top-box {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding-bottom: 300rpx;
-}
-.remind-img {
-  width: 250rpx;
-  height: 250rpx;
-  padding-bottom: 25rpx;
 }
 
 @keyframes rise {
