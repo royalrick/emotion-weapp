@@ -1,0 +1,96 @@
+<template>
+  <view>
+    <camera device-position="back" flash="off" binderror="error" class="camera">
+      <view class="emotion-name">
+        <text class="title">开 森</text>
+      </view>
+    </camera>
+    <button @tap="takePhoto" class="btn" hover-class="btn-hover">拍 照</button>
+    <view class="photos">
+      <repeat for="{{ photos }}" key="index" index="index" item="photo">
+          <image @tap="remake(index)" class="photo" mode="widthFix" src="{{ photo }}"/>
+      </repeat>
+    </view>
+  </view>
+</template>
+<script>
+// 表演页面
+import wepy from 'wepy';
+
+export default class Action extends wepy.page {
+  config = {
+    navigationBarTitleText: '开始表演',
+    enablePullDownRefresh: false,
+    disableScroll: true,
+    navigationBarBackgroundColor: '#69c3aa'
+  };
+
+  data = {
+    photos: [], // 记录的表情照片
+
+    // 情感内容
+    emotions: {
+      anger: {}, // 生气
+      contempt: {}, // 轻蔑
+      disgust: {}, // 厌恶
+      fear: {}, // 恐惧
+      happiness: {}, // 幸福
+      neutral: {}, // 中立
+      sadness: {}, // 伤心
+      surprise: {} // 惊喜
+    }
+  };
+
+  methods = {
+    // 拍照
+    takePhoto() {
+      const ctx = wepy.createCameraContext();
+      ctx.takePhoto({
+        quality: 'high',
+        success: res => {
+          this.setData({
+            photos: [...this.data.photos, res.tempImagePath]
+          });
+        }
+      });
+    },
+
+    // 重拍
+    remake() {}
+  };
+}
+</script>
+
+<style lang="less">
+@import '../variables';
+
+.camera {
+  width: 100%;
+  height: 900rpx;
+}
+
+.photos {
+  display: flex;
+  justify-content: center;
+}
+.photo {
+  width: 90rpx;
+  height: 90rpx;
+  border: 1px solid @green;
+}
+
+.emotion-name {
+  text-align: center;
+  position: relative;
+  top: 700rpx;
+}
+
+.title {
+  padding: 20px;
+  color: @white;
+  font-size: 18pt;
+  font-weight: bold;
+  text-align: center;
+}
+</style>
+

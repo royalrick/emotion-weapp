@@ -11,9 +11,9 @@
           <image class="wave wave-bg" src="/images/wave.png" mode="aspectFill" />
         </view>
         <view class="bd">
-          <button class="confirm-btn" @tap='goToIndex'>开始表演</button>
-          <button class="confirm-btn" @tap='goToIndex'>演艺生涯</button>
-          <text class="copyright">@qindiandadudu 贡献本页代码</text>
+          <navigator url="/pages/action" class="btn" hover-class="btn-hover">开始表演</navigator>
+          <navigator url="/pages/history" class="btn" hover-class="btn-hover">演艺生涯</navigator>
+          <text class="desc" @tap="direct">测试下你的演技值多少分</text>
         </view>
       </view>
     </block>
@@ -37,14 +37,6 @@ export default class Index extends wepy.page {
     userInfo: {}
   };
 
-  methods = {
-    goToIndex() {
-      wx.switchTab({
-        url: '/pages/index/index'
-      });
-    }
-  };
-
   onLoad() {
     this.$parent.getUserInfo(userInfo => {
       this.userInfo = userInfo;
@@ -55,21 +47,20 @@ export default class Index extends wepy.page {
   }
 
   onReady() {
-    var that = this;
-    setTimeout(function() {
-      that.setData({
+    setTimeout(() => {
+      this.setData({
         remind: ''
       });
     }, 1000);
-    wx.onAccelerometerChange(function(res) {
+    wx.onAccelerometerChange(res => {
       var angle = -(res.x * 30).toFixed(1);
       if (angle > 14) {
         angle = 14;
       } else if (angle < -14) {
         angle = -14;
       }
-      if (that.data.angle !== angle) {
-        that.setData({
+      if (this.data.angle !== angle) {
+        this.setData({
           angle: angle
         });
       }
@@ -80,8 +71,7 @@ export default class Index extends wepy.page {
 
 
 <style lang="less">
-@green: #69c3aa;
-@white: #f4f4f4;
+@import '../variables';
 
 page {
   font-family: -apple-system-font, Helvetica Neue, Helvetica, sans-serif;
@@ -275,21 +265,7 @@ page {
   }
 }
 
-.confirm-btn {
-  font-size: 13pt;
-  line-height: 85rpx;
-  height: 85rpx;
-  background: @green;
-  color: #fff;
-  text-align: center;
-  border-radius: 100rpx;
-  margin: 20px;
-}
-.confirm-btn:active {
-  opacity: 0.8;
-}
-
-.copyright {
+.desc {
   font-size: 28rpx;
   color: #999;
   position: fixed;

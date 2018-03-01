@@ -1,4 +1,6 @@
 <style lang="less">
+@import './variables';
+
 .container {
   height: 100%;
   display: flex;
@@ -6,6 +8,21 @@
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
+}
+
+.btn {
+  font-size: 13pt;
+  line-height: 85rpx;
+  height: 85rpx;
+  background: @green;
+  color: #fff;
+  text-align: center;
+  border-radius: 100rpx;
+  margin: 20px;
+}
+
+.btn-hover {
+  opacity: 0.8;
 }
 </style>
 
@@ -15,7 +32,7 @@ import 'wepy-async-function';
 
 export default class extends wepy.app {
   config = {
-    pages: ['pages/index'],
+    pages: ['pages/index', 'pages/action', 'pages/history'],
     window: {
       backgroundTextStyle: 'light',
       navigationBarBackgroundColor: '#fff',
