@@ -1,16 +1,13 @@
 <template>
   <view>
-    <camera device-position="back" flash="off" binderror="error" class="camera">
-      <view class="emotion-name">
-        <text class="title">开 森</text>
-      </view>
+    <camera binderror="userRefuse" device-position="front" flash="off" class="camera">
+       <cover-view class="emotion-name">
+        <cover-view class="title">{{ emotions[current] }}</cover-view>
+        <cover-view class="tips">请露出幸福的表情</cover-view>
+      </cover-view>
     </camera>
+    <progress active active-mode="forwards" percent="{{ percent }}" stroke-width="3" activeColor="#69c3aa" backgroundColor="#ccc"/>
     <button @tap="takePhoto" class="btn" hover-class="btn-hover">拍 照</button>
-    <view class="photos">
-      <repeat for="{{ photos }}" key="index" index="index" item="photo">
-          <image @tap="remake(index)" class="photo" mode="widthFix" src="{{ photo }}"/>
-      </repeat>
-    </view>
   </view>
 </template>
 <script>
@@ -27,36 +24,41 @@ export default class Action extends wepy.page {
 
   data = {
     photos: [], // 记录的表情照片
-
-    // 情感内容
-    emotions: {
-      anger: {}, // 生气
-      contempt: {}, // 轻蔑
-      disgust: {}, // 厌恶
-      fear: {}, // 恐惧
-      happiness: {}, // 幸福
-      neutral: {}, // 中立
-      sadness: {}, // 伤心
-      surprise: {} // 惊喜
-    }
+    emotions: ['生气', '轻蔑', '厌恶', '恐惧', '幸福', '中立', '伤心', '惊喜'], // 表情
+    current: 0 // 当前拍照进度索引
   };
 
   methods = {
     // 拍照
     takePhoto() {
-      const ctx = wepy.createCameraContext();
-      ctx.takePhoto({
+      // 判断是否拍摄完成
+      if (this.current + 1 > this.emotions.length);
+
+      const camera = wepy.createCameraContext();
+      camera.takePhoto({
         quality: 'high',
         success: res => {
-          this.setData({
-            photos: [...this.data.photos, res.tempImagePath]
-          });
+          this.current++; // 进入下一个任务
+
+          this.photos.push(res.tempImagePath);
+          this.$apply();
         }
       });
     },
 
-    // 重拍
-    remake() {}
+    // 用户拒绝调用摄像头
+    userRefuse(event) {
+      // console.log(event.detail);
+    }
+  };
+
+  computed = {
+    // 计算进度百分比
+    percent() {
+      const len = this.emotions.length;
+
+      return this.current / len * 100;
+    }
   };
 }
 </script>
@@ -66,17 +68,7 @@ export default class Action extends wepy.page {
 
 .camera {
   width: 100%;
-  height: 900rpx;
-}
-
-.photos {
-  display: flex;
-  justify-content: center;
-}
-.photo {
-  width: 90rpx;
-  height: 90rpx;
-  border: 1px solid @green;
+  height: 950rpx;
 }
 
 .emotion-name {
@@ -86,10 +78,17 @@ export default class Action extends wepy.page {
 }
 
 .title {
-  padding: 20px;
-  color: @white;
-  font-size: 18pt;
+  color: @green;
+  padding: 40rpx;
+  font-size: 24pt;
   font-weight: bold;
+  text-align: center;
+  letter-spacing: 20rpx;
+}
+
+.tips {
+  color: @green;
+  font-size: 12pt;
   text-align: center;
 }
 </style>
