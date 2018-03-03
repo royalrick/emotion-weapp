@@ -12,7 +12,6 @@
         </view>
         <view class="bd">
           <navigator url="/pages/action" class="btn" hover-class="btn-hover">开始表演</navigator>
-          <navigator url="/pages/history" class="btn" hover-class="btn-hover">演艺生涯</navigator>
           <text class="desc" @tap="direct">测试下你的演技值多少分</text>
         </view>
       </view>
