@@ -65,11 +65,6 @@ export default class Action extends wepy.page {
       });
     },
 
-    // 提交
-    submit(path) {
-      
-    },
-
     // 重拍
     reTake() {
       this.reset();
@@ -123,6 +118,14 @@ export default class Action extends wepy.page {
   reset() {
     this.current = this.canvas.x = this.canvas.y = 0;
     this.canvas.ctx = wepy.createCanvasContext('action-img');
+  }
+
+  // 提交
+  submit(path) {
+    wepy.previewImage({
+      // current: '', // 当前显示图片的http链接
+      urls: [path] // 需要预览的图片http链接列表
+    });
   }
 
   computed = {
