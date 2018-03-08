@@ -1,5 +1,6 @@
 <script>
 import wepy from 'wepy';
+import { BaseURL } from './config';
 import 'wepy-async-function';
 
 export default class extends wepy.app {
@@ -14,7 +15,8 @@ export default class extends wepy.app {
   };
 
   globalData = {
-    userInfo: null
+    token: '', // JWT token
+    userInfo: {}
   };
 
   constructor() {
@@ -22,21 +24,46 @@ export default class extends wepy.app {
     this.use('requestfix');
   }
 
-  onLaunch() {
-    this.testAsync();
+  async onLaunch() {
+    const expire = await this.checkAuth();
+    if (!this.globalData.token || expire) {
+      const res = await this.login();
+      this.globalData.token = res.token;
+    }
   }
 
-  sleep(s) {
+  // 检查 access_key 是否过过期
+  checkAuth() {
     return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve('promise resolved');
-      }, s * 1000);
+      wepy.checkSession({
+        fail: () => {
+          resolve(true);
+        }
+      });
     });
   }
 
-  async testAsync() {
-    const data = await this.sleep(3);
-    console.log(data);
+  // 登录
+  login() {
+    return new Promise((resolve, reject) => {
+      wepy.login({
+        success: res => {
+          if (res.code) {
+            //发起网络请求
+            wepy.request({
+              method: 'POST',
+              url: `${BaseURL}/token`,
+              data: { code: res.code },
+              success: res => {
+                resolve({ token: res.data.token });
+              }
+            });
+          } else {
+            reject();
+          }
+        }
+      });
+    });
   }
 
   getUserInfo(cb) {
