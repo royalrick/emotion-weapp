@@ -16,7 +16,7 @@ export default class extends wepy.app {
 
   globalData = {
     token: '', // JWT token
-    userInfo: {}
+    userInfo: null
   };
 
   constructor() {
@@ -84,8 +84,7 @@ export default class extends wepy.app {
       success: res => {
         this.globalData.userInfo = res.userInfo;
         callback(res.userInfo);
-      },
-      complete() {}
+      }
     });
   }
 }
