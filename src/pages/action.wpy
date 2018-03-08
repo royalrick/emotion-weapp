@@ -2,8 +2,8 @@
   <view>
     <camera binderror="userRefuse" device-position="front" flash="off" class="camera">
        <cover-view class="emotion-name">
-        <cover-view class="title">{{ emotions[current] }}</cover-view>
-        <cover-view class="tips">请露出幸福的表情</cover-view>
+        <cover-view class="title">{{ emotions[current].Name }}</cover-view>
+        <cover-view class="tips">{{ emotions[current].Desc }}</cover-view>
       </cover-view>
     </camera>
     <progress active active-mode="forwards" percent="{{ percent }}" stroke-width="3" activeColor="#69c3aa" backgroundColor="#ccc"/>
@@ -14,6 +14,7 @@
 <script>
 // 表演页面
 import wepy from 'wepy';
+import { BaseURL } from '../config';
 
 export default class Action extends wepy.page {
   config = {
@@ -24,7 +25,7 @@ export default class Action extends wepy.page {
   };
 
   data = {
-    emotions: ['生气', '轻蔑', '厌恶', '恐惧', '幸福', '中立', '伤心', '惊喜'], // 表情
+    emotions: [], // 表情
     current: 0, // 当前拍照进度索引
 
     // 绘图相关设定
@@ -43,7 +44,7 @@ export default class Action extends wepy.page {
     // 拍照
     takePhoto() {
       // 判断是否拍摄完成
-      if (this.current + 1 > this.emotions.length);
+      if (this.current + 1 > this.emotions.length) return;
 
       const camera = wepy.createCameraContext();
       camera.takePhoto({
@@ -99,19 +100,19 @@ export default class Action extends wepy.page {
       this.canvas.y += inHeight + this.canvas.margin * 2;
     }
 
-    if (this.complete) {
-      // 保存图片
-      this.canvas.ctx.draw(true, res => {
+    this.canvas.ctx.draw(true, res => {
+      if (this.complete) {
+        // 保存图片
         wepy.canvasToTempFilePath({
-          x,
-          y,
+          x: 0,
+          y: 0,
           canvasId: 'action-img',
           success: res => {
             this.submit(res.tempFilePath);
           }
         });
-      });
-    }
+      }
+    });
   }
 
   // 重置拍照
@@ -123,7 +124,6 @@ export default class Action extends wepy.page {
   // 提交
   submit(path) {
     wepy.previewImage({
-      // current: '', // 当前显示图片的http链接
       urls: [path] // 需要预览的图片http链接列表
     });
   }
@@ -139,6 +139,18 @@ export default class Action extends wepy.page {
       return Math.round(this.current * 100 / this.emotions.length);
     }
   };
+
+  onLoad() {
+    wepy.request({
+      method: 'GET',
+      header: this.$parent.authHeader(),
+      url: `${BaseURL}/auth/actions`,
+      success: res => {
+        this.emotions = [...res.data.emotions];
+        this.$apply();
+      }
+    });
+  }
 
   onShow() {
     this.reset();
@@ -175,10 +187,10 @@ export default class Action extends wepy.page {
   text-align: center;
 }
 
-// .canvas {
-//   position: absolute;
-//   left: 0;
-//   top: -100%;
-// }
+.canvas {
+  position: absolute;
+  left: 0;
+  top: -100%;
+}
 </style>
 

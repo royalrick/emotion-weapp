@@ -37,7 +37,7 @@ export default class Index extends wepy.page {
   };
 
   onLoad() {
-    this.$parent.getUserInfo(userInfo => {
+    this.$parent.getUserInfo(userInfo => {      
       this.userInfo = userInfo;
       this.$apply();
     });

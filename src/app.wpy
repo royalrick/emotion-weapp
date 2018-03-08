@@ -36,7 +36,10 @@ export default class extends wepy.app {
   checkAuth() {
     return new Promise((resolve, reject) => {
       wepy.checkSession({
-        fail: () => {
+        success() {
+          resolve(false);
+        },
+        fail() {
           resolve(true);
         }
       });
@@ -49,7 +52,7 @@ export default class extends wepy.app {
       wepy.login({
         success: res => {
           if (res.code) {
-            //发起网络请求
+            // 获取token
             wepy.request({
               method: 'POST',
               url: `${BaseURL}/token`,
@@ -66,15 +69,23 @@ export default class extends wepy.app {
     });
   }
 
-  getUserInfo(cb) {
+  // 获取授权认证请求头
+  authHeader() {
+    return { Authorization: `Bearer ${this.globalData.token}` };
+  }
+
+  getUserInfo(callback) {
     if (this.globalData.userInfo) {
-      return this.globalData.userInfo;
+      callback(this.globalData.userInfo);
+      return;
     }
+
     wepy.getUserInfo({
       success: res => {
         this.globalData.userInfo = res.userInfo;
-        cb && cb(res.userInfo);
-      }
+        callback(res.userInfo);
+      },
+      complete() {}
     });
   }
 }
