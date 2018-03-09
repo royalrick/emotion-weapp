@@ -174,7 +174,6 @@ export default class Action extends wepy.page {
 
   // 提交
   submit(filePath) {
-    wepy.saveImageToPhotosAlbum({ filePath });
     // 上传图片
     wepy.uploadFile({
       header: this.$parent.authHeader(),
@@ -202,13 +201,19 @@ export default class Action extends wepy.page {
 
   // 评价通过 根据 url 预览图片
   preview(url) {
+    this.reset();
+    wepy.showLoading({ title: '专家紧急评审中...', mask: true });
+
     // 下载图片
     wepy.downloadFile({
       url,
       success: res => {
         // 预览图片
         wepy.previewImage({
-          urls: [res.tempFilePath] // 需要预览的图片http链接列表
+          urls: [res.tempFilePath], // 需要预览的图片http链接列表
+          complete: () => {
+            wepy.hideLoading();
+          }
         });
       }
     });
@@ -218,6 +223,7 @@ export default class Action extends wepy.page {
   showMessage(msg) {
     wepy.showModal({
       title: '注意啦',
+      confirmText: '再来一次',
       content: msg,
       success: res => {
         this.reset();
