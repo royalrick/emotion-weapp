@@ -3,6 +3,7 @@
     <view class="top-box">
     <image class="logo" src="{{userInfo.avatarUrl}}" />
     <text class="level">称号：入戏三分</text>
+    <text class="record">最高记录: 98分</text>
     </view>
     <block>
       <view class="content">
@@ -37,7 +38,7 @@ export default class Index extends wepy.page {
   };
 
   onLoad() {
-    this.$parent.getUserInfo(userInfo => {      
+    this.$parent.getUserInfo(userInfo => {
       this.userInfo = userInfo;
       this.$apply();
     });
@@ -271,6 +272,11 @@ page {
   font-size: 18pt;
   font-weight: bold;
   text-align: center;
+}
+
+.record {
+  font-size: 14pt;
+  color: @white;
 }
 </style>
 

@@ -6,7 +6,7 @@
         <cover-view class="tips">{{ emotions[current].Desc }}</cover-view>
       </cover-view>
     </camera>
-    <progress active active-mode="forwards" percent="{{ percent }}" stroke-width="3" activeColor="#69c3aa" backgroundColor="#ccc"/>
+    <progress active active-mode="forwards" percent="{{ percent }}" stroke-width="5" activeColor="#69c3aa" backgroundColor="#ccc"/>
     <button @tap="takePhoto" class="btn" hover-class="btn-hover">拍 照</button>
     <canvas class="canvas" style=" width: {{ canvas.width }}px;height:{{ canvas.height }}px;" canvas-id="action-canvas" />
   </view>
@@ -32,10 +32,10 @@ export default class Action extends wepy.page {
     canvas: {
       x: 0, // X轴起点
       y: 0, // Y轴起点
-      margin: 10, // 外边距
+      margin: 5, // 外边距
       num: 3, // 每排存放张数
-      width: 1000, // 画布宽度
-      height: 1500, // 画布高度
+      width: 250, // 画布宽度
+      height: 360, // 画布高度
       ctx: null // canvas 画布实例
     }
   };
@@ -43,33 +43,74 @@ export default class Action extends wepy.page {
   methods = {
     // 拍照
     takePhoto() {
-      // 判断是否拍摄完成
-      if (this.complete()) return;
       wepy.showLoading({ title: '沉醉中 ...', mask: true });
       const camera = wepy.createCameraContext();
       camera.takePhoto({
         quality: 'high',
         success: res => {
-          this.drawlInCanvas(res.tempImagePath, res.width, res.height, res => {
-            this.current++; // 进入下一个任务
-            if (this.complete()) {
-              // 保存图片
-              wepy.canvasToTempFilePath({
-                x: 0,
-                y: 0,
-                canvasId: 'action-canvas',
-                success: res => {
-                  this.submit(res.tempFilePath);
-                },
-                fail: err => {
+          if (this.current === Math.round(this.emotions.length / 2)) {
+            // 中间画小程序码
+            this.drawlInCanvas(
+              '/images/appcode.jpg',
+              res.width,
+              res.height,
+              () => {
+                this.drawlInCanvas(
+                  res.tempImagePath,
+                  res.width,
+                  res.height,
+                  () => {
+                    this.current++; // 进入下一个任务
+                    this.$apply();
+                    if (this.complete()) {
+                      // 保存图片
+                      wepy.canvasToTempFilePath({
+                        x: 0,
+                        y: 0,
+                        quality: 0.5,
+                        canvasId: 'action-canvas',
+                        success: res => {
+                          this.submit(res.tempFilePath);
+                        },
+                        fail: err => {
+                          wepy.hideLoading();
+                        }
+                      });
+                    } else {
+                      wepy.hideLoading();
+                    }
+                  }
+                );
+              }
+            );
+          } else {
+            this.drawlInCanvas(
+              res.tempImagePath,
+              res.width,
+              res.height,
+              res => {
+                this.current++; // 进入下一个任务
+                this.$apply();
+                if (this.complete()) {
+                  // 保存图片
+                  wepy.canvasToTempFilePath({
+                    x: 0,
+                    y: 0,
+                    quality: 0.5,
+                    canvasId: 'action-canvas',
+                    success: res => {
+                      this.submit(res.tempFilePath);
+                    },
+                    fail: err => {
+                      wepy.hideLoading();
+                    }
+                  });
+                } else {
                   wepy.hideLoading();
                 }
-              });
-            } else {
-              wepy.hideLoading();
-            }
-          });
-          this.$apply();
+              }
+            );
+          }
         },
         fail: err => {
           //
@@ -120,7 +161,9 @@ export default class Action extends wepy.page {
       this.canvas.y += inHeight + this.canvas.margin * 2;
     }
 
-    this.canvas.ctx.draw(true, callback());
+    this.canvas.ctx.draw(true, () => {
+      callback();
+    });
   }
 
   // 重置拍照
@@ -130,9 +173,60 @@ export default class Action extends wepy.page {
   }
 
   // 提交
-  submit(path) {
-    wepy.previewImage({
-      urls: [path] // 需要预览的图片http链接列表
+  submit(filePath) {
+    wepy.saveImageToPhotosAlbum({ filePath });
+    // 上传图片
+    wepy.uploadFile({
+      header: this.$parent.authHeader(),
+      url: `${BaseURL}/auth/actions`,
+      filePath,
+      name: 'image',
+      success: res => {
+        const data = JSON.parse(res.data);
+        if (data.pass) {
+          // 评价通过
+          this.preview(data.url);
+        } else {
+          // 评价失败
+          this.showMessage(data.message);
+        }
+      },
+      fail: err => {
+        //
+      },
+      complete: () => {
+        wepy.hideLoading();
+      }
+    });
+  }
+
+  // 评价通过 根据 url 预览图片
+  preview(url) {
+    // 下载图片
+    wepy.downloadFile({
+      url,
+      success: res => {
+        // 预览图片
+        wepy.previewImage({
+          urls: [res.tempFilePath] // 需要预览的图片http链接列表
+        });
+      }
+    });
+  }
+
+  // 评价失败 展示失败原因
+  showMessage(msg) {
+    wepy.showModal({
+      title: '注意啦',
+      content: msg,
+      success: res => {
+        this.reset();
+        if (res.confirm) {
+          console.log('用户点击确定');
+        } else if (res.cancel) {
+          console.log('用户点击取消');
+        }
+      }
     });
   }
 
