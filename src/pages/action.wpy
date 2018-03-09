@@ -1,5 +1,5 @@
 <template>
-  <view>
+  <view class="action">
     <camera binderror="userRefuse" device-position="front" flash="off" class="camera">
        <cover-view class="emotion-name">
         <cover-view class="title">{{ emotions[current].Name }}</cover-view>
@@ -8,7 +8,7 @@
     </camera>
     <progress active active-mode="forwards" percent="{{ percent }}" stroke-width="3" activeColor="#69c3aa" backgroundColor="#ccc"/>
     <button @tap="takePhoto" class="btn" hover-class="btn-hover">拍 照</button>
-    <canvas class="canvas" style=" width: {{ canvas.width }}px;height:{{ canvas.height }}px;" canvas-id="action-img" />
+    <canvas class="canvas" style=" width: {{ canvas.width }}px;height:{{ canvas.height }}px;" canvas-id="action-canvas" />
   </view>
 </template>
 <script>
@@ -44,15 +44,35 @@ export default class Action extends wepy.page {
     // 拍照
     takePhoto() {
       // 判断是否拍摄完成
-      if (this.current + 1 > this.emotions.length) return;
-
+      if (this.complete()) return;
+      wepy.showLoading({ title: '沉醉中 ...', mask: true });
       const camera = wepy.createCameraContext();
       camera.takePhoto({
         quality: 'high',
         success: res => {
-          this.current++; // 进入下一个任务
-          this.drawlInCanvas(res.tempImagePath, res.width, res.height);
+          this.drawlInCanvas(res.tempImagePath, res.width, res.height, res => {
+            this.current++; // 进入下一个任务
+            if (this.complete()) {
+              // 保存图片
+              wepy.canvasToTempFilePath({
+                x: 0,
+                y: 0,
+                canvasId: 'action-canvas',
+                success: res => {
+                  this.submit(res.tempFilePath);
+                },
+                fail: err => {
+                  wepy.hideLoading();
+                }
+              });
+            } else {
+              wepy.hideLoading();
+            }
+          });
           this.$apply();
+        },
+        fail: err => {
+          //
         }
       });
     },
@@ -73,9 +93,9 @@ export default class Action extends wepy.page {
   };
 
   // 把照片画到画布
-  drawlInCanvas(path, width, height) {
-    if (this.current === 1) {
-      // 填充背景颜色
+  drawlInCanvas(path, width, height, callback) {
+    if (this.current === 0) {
+      // 第一次填充背景颜色
       this.canvas.ctx.setFillStyle('#f4f4f4');
       this.canvas.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
       this.canvas.ctx.fill();
@@ -100,25 +120,13 @@ export default class Action extends wepy.page {
       this.canvas.y += inHeight + this.canvas.margin * 2;
     }
 
-    this.canvas.ctx.draw(true, res => {
-      if (this.complete) {
-        // 保存图片
-        wepy.canvasToTempFilePath({
-          x: 0,
-          y: 0,
-          canvasId: 'action-img',
-          success: res => {
-            this.submit(res.tempFilePath);
-          }
-        });
-      }
-    });
+    this.canvas.ctx.draw(true, callback());
   }
 
   // 重置拍照
   reset() {
     this.current = this.canvas.x = this.canvas.y = 0;
-    this.canvas.ctx = wepy.createCanvasContext('action-img');
+    this.canvas.ctx = wepy.createCanvasContext('action-canvas');
   }
 
   // 提交
@@ -128,12 +136,12 @@ export default class Action extends wepy.page {
     });
   }
 
-  computed = {
-    // 判断是否拍照完成
-    complete() {
-      return this.current >= this.emotions.length;
-    },
+  // 判断是否拍照完成
+  complete() {
+    return this.current >= this.emotions.length;
+  }
 
+  computed = {
     // 计算进度百分比
     percent() {
       return Math.round(this.current * 100 / this.emotions.length);
@@ -161,6 +169,18 @@ export default class Action extends wepy.page {
 <style lang="less">
 @import '../variables';
 
+.action {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.canvas {
+  position: absolute;
+  top: 200%;
+}
+
 .camera {
   width: 100%;
   height: 950rpx;
@@ -185,12 +205,6 @@ export default class Action extends wepy.page {
   color: @green;
   font-size: 12pt;
   text-align: center;
-}
-
-.canvas {
-  position: absolute;
-  left: 0;
-  top: -100%;
 }
 </style>
 
