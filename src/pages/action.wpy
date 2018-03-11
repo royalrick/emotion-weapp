@@ -2,8 +2,8 @@
   <view class="action">
     <camera binderror="userRefuse" device-position="front" flash="off" class="camera">
        <cover-view class="emotion-name">
-        <cover-view class="title">{{ emotions[current].Name }}</cover-view>
-        <cover-view class="tips">{{ emotions[current].Desc }}</cover-view>
+        <cover-view class="title">{{ emotions[current].name }}</cover-view>
+        <cover-view class="tips">{{ emotions[current].desc }}</cover-view>
       </cover-view>
     </camera>
     <progress active active-mode="forwards" percent="{{ percent }}" stroke-width="5" activeColor="#69c3aa" backgroundColor="#ccc"/>
