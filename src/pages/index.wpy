@@ -1,9 +1,9 @@
 <template>
   <view class="container">
     <view class="top-box">
-    <image class="logo" src="{{userInfo.avatarUrl}}" />
-    <text class="level">称号：入戏三分</text>
-    <text class="record">最高记录: 98分</text>
+    <image class="logo" src="{{ user.avatar }}" />
+    <text class="level">称号：{{ user.title }}</text>
+    <text class="record">最高记录: {{ user.record }}分</text>
     </view>
     <block>
       <view class="content">
@@ -23,7 +23,7 @@
 
 <script>
 import wepy from 'wepy';
-
+import { BaseURL } from '../config';
 export default class Index extends wepy.page {
   config = {
     navigationBarTitleText: '',
@@ -34,13 +34,43 @@ export default class Index extends wepy.page {
 
   data = {
     angle: 0,
-    userInfo: {}
+    user: {
+      title: '...',
+      record: 0
+    }
   };
 
   onLoad() {
-    this.$parent.getUserInfo(userInfo => {
-      this.userInfo = userInfo;
+    this.$parent.getUserInfo(user => {
+      this.user.avatar = user.avatar;
+      this.user.gender = user.gender;
+      this.user.nickname = user.nickname;
       this.$apply();
+    });
+
+    this.getUserData();
+  }
+
+  // 获取用户数据
+  async getUserData() {
+    wepy.request({
+      method: 'GET',
+      url: `${BaseURL}/auth/user`,
+      header: await this.$parent.authHeader(),
+      success: res => {
+        this.user.title = res.data.title;
+        this.user.record = res.data.record;
+        this.$apply();
+
+        // dev: should compare and update
+        // 更新用户
+        // wepy.request({
+        //   method: 'OPTION',
+        //   data:{},
+        //   url: `${BaseURL}/auth/user`,
+        //   header: this.authHeader()
+        // });
+      }
     });
   }
 

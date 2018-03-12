@@ -16,7 +16,7 @@ export default class extends wepy.app {
 
   globalData = {
     token: '', // JWT token
-    userInfo: null
+    user: null
   };
 
   constructor() {
@@ -69,21 +69,36 @@ export default class extends wepy.app {
     });
   }
 
-  // 获取授权认证请求头
+  // 同步获取授权认证请求头
   authHeader() {
-    return { Authorization: `Bearer ${this.globalData.token}` };
+    return new Promise(resolve => {
+      if (!this.globalData.token) {
+        const timer = setInterval(() => {
+          if (this.globalData.token) {
+            resolve({ Authorization: `Bearer ${this.globalData.token}` });
+            clearInterval(timer);
+          }
+        }, 50);
+      } else {
+        resolve({ Authorization: `Bearer ${this.globalData.token}` });
+      }
+    });
   }
 
   getUserInfo(callback) {
-    if (this.globalData.userInfo) {
-      callback(this.globalData.userInfo);
+    if (this.globalData.user) {
+      callback(this.globalData.user);
       return;
     }
 
     wepy.getUserInfo({
       success: res => {
-        this.globalData.userInfo = res.userInfo;
-        callback(res.userInfo);
+        this.globalData.user = {
+          avatar: res.userInfo.avatarUrl,
+          gender: res.userInfo.gender,
+          nickname: res.userInfo.nickName
+        };
+        callback(this.globalData.user);
       }
     });
   }

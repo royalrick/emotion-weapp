@@ -125,11 +125,6 @@ export default class Action extends wepy.page {
         icon: 'none',
         duration: 2000
       });
-    },
-
-    // 重拍
-    reTake() {
-      this.reset();
     }
   };
 
@@ -248,10 +243,10 @@ export default class Action extends wepy.page {
     }
   };
 
-  onLoad() {
+  async onLoad() {
     wepy.request({
       method: 'GET',
-      header: this.$parent.authHeader(),
+      header: await this.$parent.authHeader(),
       url: `${BaseURL}/auth/actions`,
       success: res => {
         this.emotions = [...res.data.emotions];
