@@ -50,12 +50,12 @@ export default class Action extends wepy.page {
         success: res => {
           if (this.current === Math.round(this.emotions.length / 2)) {
             // 中间画小程序码
-            this.drawlInCanvas(
+            this.drawInCanvas(
               '/images/appcode.jpg',
               res.width,
               res.height,
               () => {
-                this.drawlInCanvas(
+                this.drawInCanvas(
                   res.tempImagePath,
                   res.width,
                   res.height,
@@ -84,7 +84,7 @@ export default class Action extends wepy.page {
               }
             );
           } else {
-            this.drawlInCanvas(
+            this.drawInCanvas(
               res.tempImagePath,
               res.width,
               res.height,
@@ -129,7 +129,7 @@ export default class Action extends wepy.page {
   };
 
   // 把照片画到画布
-  drawlInCanvas(path, width, height, callback) {
+  drawInCanvas(path, width, height, callback) {
     if (this.current === 0) {
       // 第一次填充背景颜色
       this.canvas.ctx.setFillStyle('#f4f4f4');
