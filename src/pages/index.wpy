@@ -35,7 +35,7 @@ export default class Index extends wepy.page {
   data = {
     angle: 0,
     user: {
-      title: '...',
+      title: '',
       record: 0
     }
   };
@@ -47,8 +47,6 @@ export default class Index extends wepy.page {
       this.user.nickname = user.nickname;
       this.$apply();
     });
-
-    this.getUserData();
   }
 
   // 获取用户数据
@@ -72,6 +70,10 @@ export default class Index extends wepy.page {
         // });
       }
     });
+  }
+
+  onShow() {
+    this.getUserData();
   }
 
   onReady() {
