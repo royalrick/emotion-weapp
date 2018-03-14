@@ -35,7 +35,7 @@ export default class Action extends wepy.page {
       margin: 5, // 外边距
       num: 3, // 每排存放张数
       width: 250, // 画布宽度
-      height: 360, // 画布高度
+      height: 340, // 画布高度
       ctx: null // canvas 画布实例
     }
   };
@@ -138,7 +138,8 @@ export default class Action extends wepy.page {
     }
 
     const inWidth =
-      this.canvas.width / this.canvas.num - this.canvas.margin * 2; // 画布上图片宽度
+      (this.canvas.width - this.canvas.margin) / this.canvas.num -
+      this.canvas.margin; // 画布上图片宽度
     const inHeight = Math.round(inWidth / width * height); // 画布上图片高度
     const x = this.canvas.x + this.canvas.margin;
     const y = this.canvas.y + this.canvas.margin;
@@ -147,13 +148,13 @@ export default class Action extends wepy.page {
 
     // 判断X轴是否还有足够的空白
     const hasSpace =
-      this.canvas.width - this.canvas.x - inWidth - this.canvas.margin * 2 >=
-      inWidth + this.canvas.margin * 2;
+      this.canvas.width - this.canvas.x - inWidth - this.canvas.margin >=
+      inWidth + this.canvas.margin;
     if (hasSpace) {
-      this.canvas.x += inWidth + this.canvas.margin * 2;
+      this.canvas.x += inWidth + this.canvas.margin;
     } else {
       this.canvas.x = 0;
-      this.canvas.y += inHeight + this.canvas.margin * 2;
+      this.canvas.y += inHeight + this.canvas.margin;
     }
 
     this.canvas.ctx.draw(true, () => {
@@ -167,22 +168,28 @@ export default class Action extends wepy.page {
     this.canvas.ctx = wepy.createCanvasContext('action-canvas');
   }
 
-  // 提交
-  submit(filePath) {
+  async submit(filePath) {
+    wepy.showLoading({ title: '专家评审中...', mask: true });
+
     // 上传图片
     wepy.uploadFile({
-      header: this.$parent.authHeader(),
+      header: await this.$parent.authHeader(),
       url: `${BaseURL}/auth/actions`,
       filePath,
       name: 'image',
       success: res => {
         const data = JSON.parse(res.data);
+        wepy.hideLoading();
+        this.reset();
+        console.log(data);
         if (data.pass) {
           // 评价通过
-          this.preview(data.url);
+          wepy.previewImage({
+            urls: [data.url] // 需要预览的图片http链接列表
+          });
         } else {
           // 评价失败
-          this.showMessage(data.message);
+          if (data.message) this.showMessage(data.message);
         }
       },
       fail: err => {
@@ -194,26 +201,6 @@ export default class Action extends wepy.page {
     });
   }
 
-  // 评价通过 根据 url 预览图片
-  preview(url) {
-    this.reset();
-    wepy.showLoading({ title: '专家紧急评审中...', mask: true });
-
-    // 下载图片
-    wepy.downloadFile({
-      url,
-      success: res => {
-        // 预览图片
-        wepy.previewImage({
-          urls: [res.tempFilePath], // 需要预览的图片http链接列表
-          complete: () => {
-            wepy.hideLoading();
-          }
-        });
-      }
-    });
-  }
-
   // 评价失败 展示失败原因
   showMessage(msg) {
     wepy.showModal({
@@ -221,7 +208,6 @@ export default class Action extends wepy.page {
       confirmText: '再来一次',
       content: msg,
       success: res => {
-        this.reset();
         if (res.confirm) {
           console.log('用户点击确定');
         } else if (res.cancel) {
