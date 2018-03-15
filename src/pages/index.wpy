@@ -47,6 +47,8 @@ export default class Index extends wepy.page {
       this.user.nickname = user.nickname;
       this.$apply();
     });
+
+    wepy.showShareMenu();
   }
 
   // 获取用户数据
@@ -74,6 +76,20 @@ export default class Index extends wepy.page {
 
   onShow() {
     this.getUserData();
+  }
+
+  onShareAppMessage(res) {
+    return {
+      title: '表情演员',
+      path: '/pages/index',
+      fail: res => {
+        wepy.showToast({
+          title: '装逼失败 请重试',
+          icon: 'success',
+          duration: 2000
+        });
+      }
+    };
   }
 
   onReady() {
