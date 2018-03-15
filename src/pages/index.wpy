@@ -13,8 +13,8 @@
         </view>
         <view class="bd">
           <navigator url="/pages/action" class="btn" hover-class="btn-hover">开始表演</navigator>
-          <navigator url="/pages/action" class="btn" hover-class="btn-hover">演艺生涯</navigator>
-          <text class="desc" @tap="direct">测试下你的演技值多少分</text>
+          <navigator url="/pages/preview" class="btn" hover-class="btn-hover">演艺生涯</navigator>
+          <text class="tail">联系 关于 捐赠</text>
         </view>
       </view>
     </block>
@@ -80,13 +80,12 @@ export default class Index extends wepy.page {
 
   onShareAppMessage(res) {
     return {
-      title: '表情演员',
+      title: '快来测测你有多少当演员的天分',
       path: '/pages/index',
       fail: res => {
         wepy.showToast({
           title: '装逼失败 请重试',
-          icon: 'success',
-          duration: 2000
+          icon: 'none'
         });
       }
     };
@@ -304,16 +303,17 @@ page {
   }
 }
 
-.desc {
-  font-size: 28rpx;
-  color: #999;
+.tail {
+  width: 100%;
   position: fixed;
   bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 30rpx;
+  display: flex;
+  justify-content: space-around;
+  font-size: 28rpx;
+  color: #999;
   text-align: center;
 }
+
 .level {
   padding: 20px;
   color: @white;

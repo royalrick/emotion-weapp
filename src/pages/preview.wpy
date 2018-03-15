@@ -1,0 +1,132 @@
+<template>
+  <view class="preview">
+    <view class="photo">
+      <image mode="widthFix" src="{{ src }}" />
+    </view>
+    <view class="menu">
+      <button @tap="preview" class="btn" hover-class="btn-hover">预 览</button>
+      <navigator url="/pages/action" class="btn" hover-class="btn-hover">要求重演</navigator>
+      <button @tap="saveToPhone" class="btn" hover-class="btn-hover">保存到手机</button>
+      <button open-type="share" class="btn" hover-class="btn-hover">发送给朋友</button>
+      <button @tap="preview" class="btn" hover-class="btn-hover">分享到朋友圈</button>
+    </view>
+  </view>
+</template>
+<script>
+// 表演结束后的预览页面
+import wepy from 'wepy';
+import { BaseURL } from '../config';
+
+export default class Preview extends wepy.page {
+  config = {
+    disableScroll: true,
+    enablePullDownRefresh: false,
+    navigationBarTitleText: '开始表演',
+    navigationBarBackgroundColor: '#69c3aa'
+  };
+
+  data = {
+    src: '',
+    score: 0,
+    title: '',
+    comment: ''
+  };
+
+  methods = {
+    // 预览表演结果
+    preview() {
+      wepy.previewImage({
+        urls: [this.src] // 需要预览的图片http链接列表
+      });
+    },
+
+    // 保存到手机
+    saveToPhone() {
+      filePath: this.src;
+      wx.saveImageToPhotosAlbum({
+        success: res => {
+          wepy.showToast({
+            title: '已保存到相册',
+            icon: 'success',
+            duration: 2000
+          });
+        }
+      });
+    }
+  };
+
+  onShareAppMessage(res) {
+    return {
+      title: '我的演技已经达到了 ≡[进无止境]≡ 的地步了，快来测测你的表演天赋！',
+      path: '/pages/index',
+      imageUrl: this.src,
+      fail: res => {
+        wepy.showToast({
+          title: '装逼失败 请重试',
+          icon: 'none'
+        });
+      }
+    };
+  }
+
+  computed = {};
+
+  async onLoad(options) {
+    // 获取表演详情
+    wepy.request({
+      method: 'GET',
+      header: await this.$parent.authHeader(),
+      url: `${BaseURL}/auth/actions/${options.action}`,
+      success: res => {
+        this.src = res.data.src;
+        this.title = res.data.title;
+        this.score = res.data.score;
+        this.commnet = res.data.commnet;
+        this.$apply();
+      }
+    });
+  }
+
+  onShow() {}
+}
+</script>
+
+<style lang="less">
+@import '../variables';
+
+// .preview {
+//   position: relative;
+//   height: 100%;
+//   width: 100%;
+//   overflow: hidden;
+// }
+
+.photo {
+  width: 100%;
+  height: 100vh;
+  background: @green;
+}
+
+.photo image {
+  width: 100%;
+  filter: blur(5rpx);
+}
+
+.menu {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  z-index: 10;
+  top: 0;
+  left: 0;
+  opacity: 0.8;
+}
+
+.menu .btn {
+  border: 1rpx solid @white;
+}
+</style>
+

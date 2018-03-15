@@ -5,7 +5,7 @@ import 'wepy-async-function';
 
 export default class extends wepy.app {
   config = {
-    pages: ['pages/index', 'pages/action'],
+    pages: ['pages/index', 'pages/action', 'pages/preview'],
     window: {
       backgroundTextStyle: 'light',
       navigationBarBackgroundColor: '#fff',
@@ -122,7 +122,7 @@ export default class extends wepy.app {
   line-height: 85rpx;
   height: 85rpx;
   background: @green;
-  color: #fff;
+  color: @white;
   text-align: center;
   border-radius: 100rpx;
   margin: 20px;

@@ -1,7 +1,7 @@
 <template>
   <view class="action">
     <camera binderror="userRefuse" device-position="front" flash="off" class="camera">
-       <cover-view class="emotion-name">
+      <cover-view class="emotion-name">
         <cover-view class="title">{{ emotions[current].name }}</cover-view>
         <cover-view class="tips">{{ emotions[current].desc }}</cover-view>
       </cover-view>
@@ -84,32 +84,27 @@ export default class Action extends wepy.page {
               }
             );
           } else {
-            this.drawInCanvas(
-              res.tempImagePath,
-              res.width,
-              res.height,
-              res => {
-                this.current++; // 进入下一个任务
-                this.$apply();
-                if (this.complete()) {
-                  // 保存图片
-                  wepy.canvasToTempFilePath({
-                    x: 0,
-                    y: 0,
-                    quality: 0.5,
-                    canvasId: 'action-canvas',
-                    success: res => {
-                      this.submit(res.tempFilePath);
-                    },
-                    fail: err => {
-                      wepy.hideLoading();
-                    }
-                  });
-                } else {
-                  wepy.hideLoading();
-                }
+            this.drawInCanvas(res.tempImagePath, res.width, res.height, res => {
+              this.current++; // 进入下一个任务
+              this.$apply();
+              if (this.complete()) {
+                // 保存图片
+                wepy.canvasToTempFilePath({
+                  x: 0,
+                  y: 0,
+                  quality: 0.5,
+                  canvasId: 'action-canvas',
+                  success: res => {
+                    this.submit(res.tempFilePath);
+                  },
+                  fail: err => {
+                    wepy.hideLoading();
+                  }
+                });
+              } else {
+                wepy.hideLoading();
               }
-            );
+            });
           }
         },
         fail: err => {
@@ -122,8 +117,7 @@ export default class Action extends wepy.page {
     userRefuse(event) {
       wepy.showToast({
         title: '请同意授权我们才能提供更好的服务',
-        icon: 'none',
-        duration: 2000
+        icon: 'none'
       });
     }
   };
@@ -181,12 +175,9 @@ export default class Action extends wepy.page {
         const data = JSON.parse(res.data);
         wepy.hideLoading();
         this.reset();
-        console.log(data);
         if (data.pass) {
           // 评价通过
-          wepy.previewImage({
-            urls: [data.url] // 需要预览的图片http链接列表
-          });
+          wepy.redirectTo({ url: `/pages/preview?action=${data.id}` });
         } else {
           // 评价失败
           if (data.message) this.showMessage(data.message);
