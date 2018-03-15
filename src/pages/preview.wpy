@@ -4,11 +4,10 @@
       <image mode="widthFix" src="{{ src }}" />
     </view>
     <view class="menu">
-      <button @tap="preview" class="btn" hover-class="btn-hover">预 览</button>
-      <navigator url="/pages/action" class="btn" hover-class="btn-hover">要求重演</navigator>
-      <button @tap="saveToPhone" class="btn" hover-class="btn-hover">保存到手机</button>
+      <navigator url="/pages/action" class="btn" hover-class="btn-hover">重 演</navigator>
+      <button @tap="saveToPhone" class="btn" hover-class="btn-hover">保存记录</button>
       <button open-type="share" class="btn" hover-class="btn-hover">发送给朋友</button>
-      <button @tap="preview" class="btn" hover-class="btn-hover">分享到朋友圈</button>
+      <button @tap="preview" class="btn" hover-class="btn-hover">预览  分享到朋友圈</button>
     </view>
   </view>
 </template>
@@ -21,7 +20,7 @@ export default class Preview extends wepy.page {
   config = {
     disableScroll: true,
     enablePullDownRefresh: false,
-    navigationBarTitleText: '开始表演',
+    navigationBarTitleText: '评审结果',
     navigationBarBackgroundColor: '#69c3aa'
   };
 
@@ -57,7 +56,9 @@ export default class Preview extends wepy.page {
 
   onShareAppMessage(res) {
     return {
-      title: `我的演技已经达到了 ≡[${this.title}]≡ 的地步了，快来测测你的表演天赋！`,
+      title: `我的演技已经达到了 ≡[${
+        this.title
+      }]≡ 的地步了，快来看看你的表演天赋如何！`,
       path: '/pages/index',
       imageUrl: this.src,
       fail: res => {
@@ -85,10 +86,10 @@ export default class Preview extends wepy.page {
 
         // 下载图片
         wepy.downloadFile({
-          url: res.data.src, //仅为示例，并非真实的资源
+          url: res.data.src,
           success: res => {
             if (res.statusCode === 200) {
-              this.src = res.data.src;
+              this.src = res.tempFilePath;
               this.$apply();
             }
           }
@@ -112,7 +113,7 @@ export default class Preview extends wepy.page {
 .photo {
   width: 100%;
   height: 100vh;
-  background: @green;
+  background: @white;
 }
 
 .photo image {
@@ -126,15 +127,9 @@ export default class Preview extends wepy.page {
   position: absolute;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-end;
   z-index: 10;
-  top: 0;
-  left: 0;
-  opacity: 0.8;
-}
-
-.menu .btn {
-  border: 1rpx solid @white;
+  bottom: 0;
 }
 </style>
 
