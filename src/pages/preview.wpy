@@ -57,7 +57,7 @@ export default class Preview extends wepy.page {
 
   onShareAppMessage(res) {
     return {
-      title: '我的演技已经达到了 ≡[进无止境]≡ 的地步了，快来测测你的表演天赋！',
+      title: `我的演技已经达到了 ≡[${this.title}]≡ 的地步了，快来测测你的表演天赋！`,
       path: '/pages/index',
       imageUrl: this.src,
       fail: res => {
@@ -78,16 +78,24 @@ export default class Preview extends wepy.page {
       header: await this.$parent.authHeader(),
       url: `${BaseURL}/auth/actions/${options.action}`,
       success: res => {
-        this.src = res.data.src;
         this.title = res.data.title;
         this.score = res.data.score;
         this.commnet = res.data.commnet;
         this.$apply();
+
+        // 下载图片
+        wepy.downloadFile({
+          url: res.data.src, //仅为示例，并非真实的资源
+          success: res => {
+            if (res.statusCode === 200) {
+              this.src = res.data.src;
+              this.$apply();
+            }
+          }
+        });
       }
     });
   }
-
-  onShow() {}
 }
 </script>
 
