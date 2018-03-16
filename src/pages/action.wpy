@@ -30,12 +30,13 @@ export default class Action extends wepy.page {
     cameraScope: false, // 是否有摄像头权限
     // 绘图相关设定
     canvas: {
+      points: [], // 照片画放在canvas上的位置
       x: 0, // X轴起点
       y: 0, // Y轴起点
       margin: 5, // 外边距
       num: 3, // 每排存放张数
       width: 250, // 画布宽度
-      height: 340, // 画布高度
+      height: 320, // 画布高度
       ctx: null // canvas 画布实例
     }
   };
@@ -52,7 +53,7 @@ export default class Action extends wepy.page {
       wepy.showLoading({ title: '沉醉中 ...', mask: true });
       const camera = wepy.createCameraContext();
       camera.takePhoto({
-        quality: 'high',
+        quality: 'low', // high | normal | low
         success: res => {
           if (this.current === Math.round(this.emotions.length / 2)) {
             // 中间画小程序码
@@ -162,7 +163,7 @@ export default class Action extends wepy.page {
   drawInCanvas(path, width, height, callback) {
     if (this.current === 0) {
       // 第一次填充背景颜色
-      this.canvas.ctx.setFillStyle('#f4f4f4');
+      this.canvas.ctx.setFillStyle('#fff');
       this.canvas.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
       this.canvas.ctx.fill();
     }
@@ -174,7 +175,9 @@ export default class Action extends wepy.page {
     const x = this.canvas.x + this.canvas.margin;
     const y = this.canvas.y + this.canvas.margin;
 
-    this.canvas.ctx.drawImage(path, x, y, inWidth, inHeight);
+    this.canvas.ctx.drawImage(path, x, y, inWidth, inHeight); // 画图
+
+    // 写字
 
     // 判断X轴是否还有足够的空白
     const hasSpace =
@@ -266,6 +269,33 @@ export default class Action extends wepy.page {
     });
   }
 
+  // 计算照片的位置信息
+  fetchPoints() {
+    const res = wepy.getSystemInfoSync();
+
+    const num = 8; // 图片数量 不包括二维码
+    const margin = 5; // 外边距
+    const cloNum = 3; // 列数
+    const rowNum = Math.ceil((num + 1) / cloNum); // 把二维码的空间算上
+
+    const photoWidth = res.windowWidth;
+    const photoHeight = res.windowHeight * 80 / 100; // 高度请于css保持一致
+    const inWidth = (this.canvas.width - margin * (cloNum + 1)) / cloNum;
+    const inHeight = inWidth / photoWidth * photoHeight;
+    this.canvas.height = inHeight * rowNum + margin * (rowNum + 1);
+
+    for (let i = 0; i < rowNum; i++) {
+      for (let k = 0; k < cloNum; k++) {
+        this.canvas.points.push([
+          (k + 1) * margin + k * inWidth,
+          (i + 1) * margin + i * inHeight
+        ]);
+      }
+    }
+
+    console.log(this.canvas.points);
+  }
+
   async onLoad() {
     wepy.request({
       method: 'GET',
@@ -277,6 +307,7 @@ export default class Action extends wepy.page {
       }
     });
 
+    this.fetchPoints();
     this.getCameraScope();
   }
 
@@ -291,7 +322,7 @@ export default class Action extends wepy.page {
 
 .action {
   position: relative;
-  height: 100%;
+  height: 100vh;
   width: 100%;
   overflow: hidden;
 }
@@ -303,7 +334,7 @@ export default class Action extends wepy.page {
 
 .camera {
   width: 100%;
-  height: 950rpx;
+  height: 80%; // 请于js保持一致
 }
 
 .emotion-name {
@@ -323,7 +354,7 @@ export default class Action extends wepy.page {
 
 .tips {
   color: @green;
-  font-size: 12pt;
+  font-size: 16pt;
   text-align: center;
 }
 </style>

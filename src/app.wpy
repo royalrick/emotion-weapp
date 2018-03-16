@@ -125,7 +125,7 @@ export default class extends wepy.app {
   color: @white;
   text-align: center;
   border-radius: 100rpx;
-  margin: 20px;
+  margin: 40rpx;
 }
 
 .btn-hover {
