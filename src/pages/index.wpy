@@ -80,7 +80,7 @@ export default class Index extends wepy.page {
 
   onShareAppMessage(res) {
     return {
-      title: '快来测测你有多少当演员的天分',
+      title: '快来测测你的演技值多少分',
       path: '/pages/index',
       fail: res => {
         wepy.showToast({
