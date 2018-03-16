@@ -1,6 +1,6 @@
 <template>
   <view class="action">
-    <camera binderror="userRefuse" device-position="front" flash="off" class="camera">
+    <camera bindstop="cameraStoped" binderror="userRefused" device-position="front" flash="off" class="camera">
       <cover-view class="emotion-name">
         <cover-view class="title">{{ emotions[current].name }}</cover-view>
         <cover-view class="tips">{{ emotions[current].desc }}</cover-view>
@@ -27,7 +27,7 @@ export default class Action extends wepy.page {
   data = {
     emotions: [], // 表情
     current: 0, // 当前拍照进度索引
-
+    cameraScope: false, // 是否有摄像头权限
     // 绘图相关设定
     canvas: {
       x: 0, // X轴起点
@@ -43,6 +43,12 @@ export default class Action extends wepy.page {
   methods = {
     // 拍照
     takePhoto() {
+      // 判断权限
+      if (!this.cameraScope) {
+        this.fetchCameraScope();
+        return;
+      }
+
       wepy.showLoading({ title: '沉醉中 ...', mask: true });
       const camera = wepy.createCameraContext();
       camera.takePhoto({
@@ -108,19 +114,49 @@ export default class Action extends wepy.page {
           }
         },
         fail: err => {
-          //
+          this.remaindingRestars();
         }
       });
     },
 
     // 用户拒绝调用摄像头
-    userRefuse(event) {
-      wepy.showToast({
-        title: '请同意授权我们才能提供更好的服务',
-        icon: 'none'
-      });
+    userRefused(event) {
+      this.fetchCameraScope();
+    },
+
+    // 摄像头意外终止
+    cameraStoped() {
+      this.remaindingRestars();
     }
   };
+
+  // 获取摄像机权限
+  fetchCameraScope() {
+    const duration = 1500;
+    wepy.showToast({
+      duration,
+      title: '同意授权才能带你装逼带你飞',
+      icon: 'none'
+    });
+
+    setTimeout(() => {
+      wepy.openSetting({
+        success: res => {
+          if (res.authSetting['scope.camera']) {
+            wepy.redirectTo({ url: '/pages/index' });
+          }
+        }
+      });
+    }, duration + 500);
+  }
+
+  // 提醒重启
+  remaindingRestars() {
+    wepy.showToast({
+      title: '开了个小差 重启我试试吧',
+      icon: 'none'
+    });
+  }
 
   // 把照片画到画布
   drawInCanvas(path, width, height, callback) {
@@ -220,6 +256,16 @@ export default class Action extends wepy.page {
     }
   };
 
+  // 获取相机授权
+  getCameraScope() {
+    wepy.getSetting({
+      success: res => {
+        this.cameraScope = res.authSetting['scope.camera'] ? true : false;
+        this.$apply();
+      }
+    });
+  }
+
   async onLoad() {
     wepy.request({
       method: 'GET',
@@ -230,6 +276,8 @@ export default class Action extends wepy.page {
         this.$apply();
       }
     });
+
+    this.getCameraScope();
   }
 
   onShow() {
