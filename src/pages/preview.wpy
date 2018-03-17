@@ -85,6 +85,7 @@ export default class Preview extends wepy.page {
         this.$apply();
 
         // 下载图片
+        wepy.showLoading({ title: '瞻仰中 ...', mask: true });
         wepy.downloadFile({
           url: res.data.src,
           success: res => {
@@ -92,6 +93,9 @@ export default class Preview extends wepy.page {
               this.src = res.tempFilePath;
               this.$apply();
             }
+          },
+          complete: () => {
+            wepy.hideLoading();
           }
         });
       }
