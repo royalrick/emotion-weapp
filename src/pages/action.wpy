@@ -1,6 +1,6 @@
 <template>
   <view class="action">
-    <camera bindstop="cameraStoped" binderror="userRefused" device-position="front" flash="off" class="camera">
+    <camera bindstop="cameraStoped" binderror="fetchCameraScope" device-position="front" flash="off" class="camera">
       <cover-view class="emotion-name">
         <cover-view class="title">{{ emotions[index].name }}</cover-view>
         <cover-view class="tips">{{ emotions[index].desc }}</cover-view>
@@ -27,8 +27,6 @@ export default class Action extends wepy.page {
   data = {
     emotions: [], // 表情
     index: 0, // 当前拍照进度索引
-    cameraScope: false, // 是否有摄像头权限
-    codePoint: {}, // 小程序码位置记录
     // 绘图相关设定
     canvas: {
       points: [], // 照片画放在canvas上的位置
@@ -47,12 +45,6 @@ export default class Action extends wepy.page {
   methods = {
     // 拍照
     takePhoto() {
-      // 判断权限
-      if (!this.cameraScope) {
-        this.fetchCameraScope();
-        return;
-      }
-
       wepy.showLoading({ title: '沉醉中 ...', mask: true });
       const camera = wepy.createCameraContext();
       camera.takePhoto({
@@ -86,9 +78,24 @@ export default class Action extends wepy.page {
       });
     },
 
-    // 用户拒绝调用摄像头
-    userRefused(event) {
-      this.fetchCameraScope();
+    // 获取摄像机权限
+    fetchCameraScope() {
+      const duration = 1500;
+      wepy.showToast({
+        duration,
+        title: '同意授权才能带你装逼带你飞',
+        icon: 'none'
+      });
+
+      setTimeout(() => {
+        wepy.openSetting({
+          success: res => {
+            if (res.authSetting['scope.camera']) {
+              wepy.redirectTo({ url: '/pages/action' });
+            }
+          }
+        });
+      }, duration + 500);
     },
 
     // 摄像头意外终止
@@ -96,26 +103,6 @@ export default class Action extends wepy.page {
       this.remaindingRestars();
     }
   };
-
-  // 获取摄像机权限
-  fetchCameraScope() {
-    const duration = 1500;
-    wepy.showToast({
-      duration,
-      title: '同意授权才能带你装逼带你飞',
-      icon: 'none'
-    });
-
-    setTimeout(() => {
-      wepy.openSetting({
-        success: res => {
-          if (res.authSetting['scope.camera']) {
-            wepy.redirectTo({ url: '/pages/index' });
-          }
-        }
-      });
-    }, duration + 500);
-  }
 
   // 提醒重启
   remaindingRestars() {
@@ -139,9 +126,11 @@ export default class Action extends wepy.page {
       this.canvas.inHeight
     );
 
+    const emotion = this.emotions[this.index];
+    if (!emotion) return;
     // 写字
     this.canvas.ctx.fillText(
-      this.emotions[this.index].name,
+      emotion.name,
       point.x + this.canvas.inWidth / 2,
       point.y + this.canvas.inHeight - 5
     );
@@ -170,11 +159,6 @@ export default class Action extends wepy.page {
     wepy.uploadFile({
       name: 'image',
       filePath,
-      formData: {
-        ...this.codePoint,
-        width: this.canvas.inWidth,
-        height: this.canvas.inHeight
-      },
       url: `${BaseURL}/auth/actions`,
       header: await this.$parent.authHeader(),
       success: res => {
@@ -227,16 +211,6 @@ export default class Action extends wepy.page {
     }
   };
 
-  // 获取相机授权
-  getCameraScope() {
-    wepy.getSetting({
-      success: res => {
-        this.cameraScope = res.authSetting['scope.camera'] ? true : false;
-        this.$apply();
-      }
-    });
-  }
-
   // 计算照片的位置信息
   fetchPoints() {
     const res = wepy.getSystemInfoSync();
@@ -247,9 +221,13 @@ export default class Action extends wepy.page {
     const rowNum = Math.ceil((num + 1) / cloNum); // 把二维码的空间算上
 
     const photoWidth = res.windowWidth;
-    const photoHeight = res.windowHeight * 80 / 100; // 高度请于css保持一致
-    this.canvas.inWidth = (this.canvas.width - margin * (cloNum + 1)) / cloNum;
-    this.canvas.inHeight = this.canvas.inWidth / photoWidth * photoHeight;
+    const photoHeight = res.windowHeight * 80 / 100; // 高度百分比请于css保持一致
+    this.canvas.inWidth = Math.round(
+      (this.canvas.width - margin * (cloNum + 1)) / cloNum
+    );
+    this.canvas.inHeight = Math.round(
+      this.canvas.inWidth / photoWidth * photoHeight
+    );
     this.canvas.height = this.canvas.inHeight * rowNum + margin * (rowNum + 1);
 
     for (let i = 0; i < rowNum; i++) {
@@ -264,10 +242,15 @@ export default class Action extends wepy.page {
     // set qrcode point
     const key = Math.ceil(num / 2);
     const point = this.canvas.points.splice(key, 1)[0];
-    this.codePoint = {
-      x: point.x,
-      y: point.y
-    };
+
+    this.canvas.ctx.drawImage(
+      '/images/appcode.jpg',
+      point.x,
+      point.y + Math.abs(this.canvas.inHeight - this.canvas.inWidth) / 2,
+      this.canvas.inWidth,
+      this.canvas.inWidth
+    );
+    this.canvas.ctx.draw(true);
   }
 
   async onLoad() {
@@ -276,13 +259,14 @@ export default class Action extends wepy.page {
       header: await this.$parent.authHeader(),
       url: `${BaseURL}/auth/actions`,
       success: res => {
-        this.emotions = [...res.data.emotions];
-        this.$apply();
+        if (res.data.emotions) {
+          this.emotions = [...res.data.emotions];
+          this.$apply();
+        }
       }
     });
 
     this.fetchPoints();
-    this.getCameraScope();
   }
 
   onShow() {
