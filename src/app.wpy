@@ -16,7 +16,8 @@ export default class extends wepy.app {
 
   globalData = {
     token: '', // JWT token
-    user: null
+    user: null,
+    appCode: '' // 小程序码本地存放路径
   };
 
   constructor() {
@@ -27,8 +28,7 @@ export default class extends wepy.app {
   async onLaunch() {
     const expire = await this.checkAuth();
     if (!this.globalData.token || expire) {
-      const res = await this.login();
-      this.globalData.token = res.token;
+      this.globalData.token = await this.login();
     }
   }
 
@@ -58,11 +58,11 @@ export default class extends wepy.app {
               url: `${BaseURL}/token`,
               data: { code: res.code },
               success: res => {
-                resolve({ token: res.data.token });
+                if (res.data.token) {
+                  resolve(res.data.token);
+                }
               }
             });
-          } else {
-            reject();
           }
         }
       });
@@ -99,6 +99,38 @@ export default class extends wepy.app {
           nickname: res.userInfo.nickName
         };
         callback(this.globalData.user);
+      }
+    });
+  }
+
+  getAppCode() {
+    return new Promise(resolve => {
+      if (this.globalData.appCode) {
+        resolve(this.globalData.appCode);
+      } else {
+        wepy.request({
+          url: `${BaseURL}/code`,
+          method: 'GET',
+          success: res => {
+            if (res.data.url) {
+              wepy.downloadFile({
+                url: res.data.url,
+                success: res => {
+                  // 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
+                  if (res.statusCode === 200) {
+                    wepy.saveFile({
+                      tempFilePath: res.tempFilePath,
+                      success: res => {
+                        this.globalData.appCode = res.savedFilePath;
+                        resolve(res.savedFilePath);
+                      }
+                    });
+                  }
+                }
+              });
+            }
+          }
+        });
       }
     });
   }

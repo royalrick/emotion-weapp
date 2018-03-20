@@ -212,7 +212,7 @@ export default class Action extends wepy.page {
   };
 
   // 计算照片的位置信息
-  fetchPoints() {
+  async fetchPoints() {
     const res = wepy.getSystemInfoSync();
 
     const num = 8; // 图片数量 不包括二维码
@@ -242,9 +242,12 @@ export default class Action extends wepy.page {
     // set qrcode point
     const key = Math.ceil(num / 2);
     const point = this.canvas.points.splice(key, 1)[0];
+    if (!point) return;
+
+    const path = await this.$parent.getAppCode();
 
     this.canvas.ctx.drawImage(
-      '/images/appcode.jpg',
+      path,
       point.x,
       point.y + Math.abs(this.canvas.inHeight - this.canvas.inWidth) / 2,
       this.canvas.inWidth,
@@ -253,11 +256,10 @@ export default class Action extends wepy.page {
     this.canvas.ctx.draw(true);
   }
 
-  async onLoad() {
+  onLoad() {
     wepy.request({
       method: 'GET',
-      header: await this.$parent.authHeader(),
-      url: `${BaseURL}/auth/actions`,
+      url: `${BaseURL}/emotions`,
       success: res => {
         if (res.data.emotions) {
           this.emotions = [...res.data.emotions];
