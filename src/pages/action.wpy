@@ -145,9 +145,7 @@ export default class Action extends wepy.page {
     // 填充背景颜色
     this.canvas.ctx.setFillStyle('#fff');
     this.canvas.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    this.canvas.ctx.fill();
 
-    this.canvas.ctx.setFillStyle('#FFF');
     this.canvas.ctx.setFontSize(12);
     this.canvas.ctx.setTextAlign('center');
   }
@@ -163,11 +161,18 @@ export default class Action extends wepy.page {
       header: await this.$parent.authHeader(),
       success: res => {
         const data = JSON.parse(res.data);
-        wepy.hideLoading();
+        // wepy.hideLoading();
+        wepy.showLoading({ title: '瞻仰中 ...', mask: true });
         this.reset();
         if (data.pass) {
           // 评价通过
-          wepy.redirectTo({ url: `/pages/preview?action=${data.id}` });
+          // wepy.redirectTo({ url: `/pages/preview?action=${data.id}` });
+          wepy.previewImage({
+            urls: [data.src], // 需要预览的图片http链接列表
+            complete: () => {
+              wepy.hideLoading();
+            }
+          });
         } else {
           // 评价失败
           if (data.message) this.showMessage(data.message);
@@ -249,10 +254,26 @@ export default class Action extends wepy.page {
     this.canvas.ctx.drawImage(
       path,
       point.x,
+      // point.y,
       point.y + Math.abs(this.canvas.inHeight - this.canvas.inWidth) / 2,
       this.canvas.inWidth,
       this.canvas.inWidth
     );
+    // this.canvas.ctx.save();
+    // this.canvas.ctx.setFontSize(6);
+    // this.canvas.ctx.setFillStyle('#69c3aa');
+    // this.canvas.ctx.fillText(
+    //   '长按识别二维码',
+    //   point.x + this.canvas.inWidth / 2,
+    //   point.y + this.canvas.inHeight - 13
+    // );
+    // this.canvas.ctx.fillText(
+    //   '试试你的演技值多少分',
+    //   point.x + this.canvas.inWidth / 2,
+    //   point.y + this.canvas.inHeight - 5
+    // );
+    // this.canvas.ctx.restore();
+
     this.canvas.ctx.draw(true);
   }
 
