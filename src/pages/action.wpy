@@ -1,13 +1,23 @@
 <template>
   <view class="action">
-    <camera bindstop="cameraStoped" binderror="fetchCameraScope" device-position="front" flash="off" class="camera">
+    <camera bindstop="cameraStoped" binderror="fetchCameraScope" device-position="{{ position || 'front' }}" flash="auto" class="camera">
       <cover-view class="emotion-name">
         <cover-view class="title">{{ emotions[index].name }}</cover-view>
         <cover-view class="tips">{{ emotions[index].desc }}</cover-view>
       </cover-view>
     </camera>
     <progress active active-mode="forwards" percent="{{ percent }}" stroke-width="5" activeColor="#69c3aa" backgroundColor="#ccc"/>
-    <button @tap="takePhoto" class="btn" hover-class="btn-hover">拍 照</button>
+    <view class="btn-group">
+      <button @tap="reverseCamera" class="btn" hover-class="btn-hover">
+        <image src="/images/reverse.svg" mode="aspectFill"/>
+      </button>
+      <button @tap="takePhoto" class="btn btn-action" hover-class="btn-hover">
+        <image src="/images/action.svg" mode="aspectFill"/>
+      </button>
+      <button disabled="{{ !current }}" @tap="currentPreview" class="btn" style="padding: 0" hover-class="btn-hover">
+        <image src="{{ current }}" mode="aspectFill"/>
+      </button>
+    </view>
     <canvas class="canvas" style=" width: {{ canvas.width }}px;height:{{ canvas.height }}px;" canvas-id="action-canvas" />
   </view>
 </template>
@@ -20,12 +30,13 @@ export default class Action extends wepy.page {
   config = {
     disableScroll: true,
     enablePullDownRefresh: false,
-    navigationBarTitleText: '开始表演',
-    navigationBarBackgroundColor: '#69c3aa'
+    navigationBarTitleText: '开始表演'
   };
 
   data = {
+    position: 'front', // 摄像头位置 front | back
     emotions: [], // 表情
+    current: '', // 当前照片地址
     index: 0, // 当前拍照进度索引
     // 绘图相关设定
     canvas: {
@@ -50,6 +61,7 @@ export default class Action extends wepy.page {
       camera.takePhoto({
         quality: 'low', // high | normal | low
         success: res => {
+          this.current = res.tempImagePath;
           this.drawInCanvas(res.tempImagePath, () => {
             this.index++; // 进入下一个任务
             this.$apply();
@@ -78,6 +90,14 @@ export default class Action extends wepy.page {
       });
     },
 
+    // 预览当前照片
+    currentPreview() {
+      return false; // dev: 预览会导致摄像头前置转后置
+      wepy.previewImage({
+        urls: [this.current] // 需要预览的图片http链接列表
+      });
+    },
+
     // 获取摄像机权限
     fetchCameraScope() {
       const duration = 1500;
@@ -101,6 +121,12 @@ export default class Action extends wepy.page {
     // 摄像头意外终止
     cameraStoped() {
       this.remaindingRestars();
+    },
+
+    // 反转镜头
+    reverseCamera() {
+      const position = this.position === 'front' ? 'back' : 'front';
+      wepy.redirectTo({ url: `/pages/action?position=${position}` });
     }
   };
 
@@ -189,16 +215,16 @@ export default class Action extends wepy.page {
 
   // 评价失败 展示失败原因
   // dev: should delete with go code
-  showMessage(msg) {
+  showMessage(content) {
     wepy.showModal({
-      title: '注意啦',
-      confirmText: '再来一次',
-      content: msg,
+      content,
+      showCancel: false,
+      title: '评审不通过',
+      confirmText: '再演一次',
       success: res => {
         if (res.confirm) {
-          console.log('用户点击确定');
-        } else if (res.cancel) {
-          console.log('用户点击取消');
+          // 用户点击确定
+          this.reset();
         }
       }
     });
@@ -216,6 +242,7 @@ export default class Action extends wepy.page {
     }
   };
 
+  // dev: 放到全局
   // 计算照片的位置信息
   async fetchPoints() {
     const res = wepy.getSystemInfoSync();
@@ -277,7 +304,12 @@ export default class Action extends wepy.page {
     this.canvas.ctx.draw(true);
   }
 
-  onLoad() {
+  onLoad(options) {
+    if (options.position) {
+      this.position = options.position;
+    }
+
+    // dev: 放到全局
     wepy.request({
       method: 'GET',
       url: `${BaseURL}/emotions`,
@@ -289,11 +321,8 @@ export default class Action extends wepy.page {
       }
     });
 
-    this.fetchPoints();
-  }
-
-  onShow() {
     this.reset();
+    this.fetchPoints();
   }
 }
 </script>
@@ -302,6 +331,7 @@ export default class Action extends wepy.page {
 @import '../variables';
 
 .action {
+  background: @white;
   position: relative;
   height: 100vh;
   width: 100%;
@@ -337,6 +367,31 @@ export default class Action extends wepy.page {
   color: @green;
   font-size: 16pt;
   text-align: center;
+}
+.btn-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-group .btn {
+  padding: 15rpx;
+  height: 100rpx;
+  width: 100rpx;
+  border: solid 1rpx #ccc;
+}
+
+.btn-group .btn image {
+  border-radius: 50%;
+  height: 100%;
+  width: 100%;
+}
+
+.btn-group .btn-action {
+  padding: 20rpx;
+  height: 150rpx;
+  width: 150rpx;
+  border: 15rpx solid #eee;
 }
 </style>
 

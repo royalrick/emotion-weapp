@@ -14,7 +14,7 @@
         <view class="bd">
           <navigator url="/pages/action" class="btn" hover-class="btn-hover">开始表演</navigator>
           <!-- <navigator url="/pages/preview?action=10" class="btn" hover-class="btn-hover">演艺生涯</navigator> -->
-          <text class="tail">联系 关于 捐赠</text>
+          <text class="tail">测测你的演技值多少分</text>
         </view>
       </view>
     </block>

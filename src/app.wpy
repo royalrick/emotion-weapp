@@ -1,6 +1,6 @@
 <script>
 import wepy from 'wepy';
-import { BaseURL } from './config';
+import { BaseURL, Debug } from './config';
 import 'wepy-async-function';
 
 export default class extends wepy.app {
@@ -8,9 +8,9 @@ export default class extends wepy.app {
     pages: ['pages/index', 'pages/action', 'pages/preview'],
     window: {
       backgroundTextStyle: 'light',
-      navigationBarBackgroundColor: '#fff',
-      navigationBarTitleText: 'WeChat',
-      navigationBarTextStyle: 'black'
+      navigationBarBackgroundColor: '#69c3aa',
+      navigationBarTitleText: '表情演员',
+      navigationBarTextStyle: 'white'
     }
   };
 
@@ -26,6 +26,11 @@ export default class extends wepy.app {
   }
 
   async onLaunch() {
+    // 打开调试
+    wepy.setEnableDebug({
+      enableDebug: Debug
+    });
+
     const expire = await this.checkAuth();
     if (!this.globalData.token || expire) {
       this.globalData.token = await this.login();
