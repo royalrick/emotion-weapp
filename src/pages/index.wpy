@@ -47,8 +47,6 @@ export default class Index extends wepy.page {
       this.user.nickname = user.nickname;
       this.$apply();
     });
-
-    wepy.showShareMenu();
   }
 
   // 获取用户数据
@@ -79,16 +77,7 @@ export default class Index extends wepy.page {
   }
 
   onShareAppMessage(res) {
-    return {
-      title: '测测你的演技值多少分',
-      path: '/pages/index',
-      fail: res => {
-        wepy.showToast({
-          title: '装逼失败 请重试',
-          icon: 'none'
-        });
-      }
-    };
+    return this.$parent.shareAppMessage()
   }
 
   onReady() {

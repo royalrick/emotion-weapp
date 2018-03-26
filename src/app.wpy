@@ -26,6 +26,7 @@ export default class extends wepy.app {
   }
 
   async onLaunch() {
+    wepy.showShareMenu();
     // 打开调试
     wepy.setEnableDebug({
       enableDebug: Debug
@@ -138,6 +139,26 @@ export default class extends wepy.app {
         });
       }
     });
+  }
+
+  // 全局分享设置
+  shareAppMessage(src = null) {
+    const content = {
+      title: '测测你的演技值多少分',
+      path: '/pages/index',
+      fail: res => {
+        wepy.showToast({
+          title: '装逼失败 请重试',
+          icon: 'none'
+        });
+      }
+    };
+
+    if (src) {
+      content.imageUrl = src;
+    }
+
+    return content;
   }
 }
 </script>
