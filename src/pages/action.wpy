@@ -85,7 +85,7 @@ export default class Action extends wepy.page {
           });
         },
         fail: err => {
-          this.remaindingRestars();
+          this.restoreRemind();
         }
       });
     },
@@ -120,7 +120,7 @@ export default class Action extends wepy.page {
 
     // 摄像头意外终止
     cameraStoped() {
-      this.remaindingRestars();
+      this.restoreRemind();
     },
 
     // 反转镜头
@@ -131,9 +131,9 @@ export default class Action extends wepy.page {
   };
 
   // 提醒重启
-  remaindingRestars() {
+  restoreRemind() {
     wepy.showToast({
-      title: '开了个小差 重启我试试吧',
+      title: '开了个小差 重启试试吧',
       icon: 'none'
     });
   }
@@ -186,10 +186,11 @@ export default class Action extends wepy.page {
       url: `${BaseURL}/auth/actions`,
       header: await this.$parent.authHeader(),
       success: res => {
-        const data = JSON.parse(res.data);
-        // wepy.hideLoading();
-        wepy.showLoading({ title: '瞻仰中 ...', mask: true });
         this.reset();
+
+        const data = JSON.parse(res.data);
+        wepy.showLoading({ title: '瞻仰中 ...', mask: true });
+
         if (data.pass) {
           // 评价通过
           // wepy.redirectTo({ url: `/pages/preview?action=${data.id}` });
@@ -201,13 +202,13 @@ export default class Action extends wepy.page {
           });
         } else {
           // 评价失败
+          wepy.hideLoading();
+
           if (data.message) this.showMessage(data.message);
         }
       },
       fail: err => {
         // dev: 上传数据失败
-      },
-      complete: () => {
         wepy.hideLoading();
       }
     });
