@@ -1,6 +1,6 @@
 <script>
 import wepy from 'wepy';
-import { BaseURL, Debug } from './config';
+import { BaseURL } from './config';
 import 'wepy-async-function';
 
 export default class extends wepy.app {
@@ -27,11 +27,6 @@ export default class extends wepy.app {
 
   async onLaunch() {
     wepy.showShareMenu();
-    // 打开调试
-    wepy.setEnableDebug({
-      enableDebug: Debug
-    });
-
     const expire = await this.checkAuth();
     if (!this.globalData.token || expire) {
       this.globalData.token = await this.login();
@@ -91,32 +86,38 @@ export default class extends wepy.app {
     });
   }
 
-  getUserInfo(callback) {
-    if (this.globalData.user) {
-      callback(this.globalData.user);
-      return;
-    }
-
-    wepy.getUserInfo({
-      success: res => {
-        this.globalData.user = {
-          avatar: res.userInfo.avatarUrl,
-          gender: res.userInfo.gender,
-          nickname: res.userInfo.nickName
-        };
-        callback(this.globalData.user);
+  getUserInfo() {
+    return new Promise(resolve => {
+      if (this.globalData.user) {
+        resolve(this.globalData.user);
+        return;
       }
+
+      wepy.getUserInfo({
+        success: res => {
+          const { avatarUrl, gender, nickName, city, country } = res.userInfo;
+          this.globalData.user = {
+            city,
+            gender,
+            country,
+            avatar: avatarUrl,
+            nickname: nickName
+          };
+          resolve(this.globalData.user);
+        }
+      });
     });
   }
 
   getAppCode() {
-    return new Promise(resolve => {
+    return new Promise(async resolve => {
       if (this.globalData.appCode) {
         resolve(this.globalData.appCode);
       } else {
         wepy.request({
-          url: `${BaseURL}/code`,
           method: 'GET',
+          url: `${BaseURL}/auth/share/code`,
+          header: await this.authHeader(),
           success: res => {
             if (res.data.url) {
               wepy.downloadFile({
@@ -165,6 +166,17 @@ export default class extends wepy.app {
 
 <style lang="less">
 @import './variables';
+
+page {
+  font-family: -apple-system-font, Helvetica Neue, Helvetica, sans-serif;
+  font-size: 10pt;
+  line-height: 150%;
+  min-height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
 
 .container {
   height: 100%;

@@ -132,6 +132,10 @@ export default class Action extends wepy.page {
 
   // 提醒重启
   restoreRemind() {
+    // 重启小程序
+    // wepy.reLaunch({
+    //   url: `/pages/action?position=${this.position}`
+    // });
     wepy.showToast({
       title: '开了个小差 重启试试吧',
       icon: 'none'
@@ -276,7 +280,6 @@ export default class Action extends wepy.page {
     const key = Math.ceil(num / 2);
     const point = this.canvas.points.splice(key, 1)[0];
     if (!point) return;
-
     const path = await this.$parent.getAppCode();
 
     this.canvas.ctx.drawImage(

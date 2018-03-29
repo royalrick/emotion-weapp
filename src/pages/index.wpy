@@ -40,12 +40,34 @@ export default class Index extends wepy.page {
     }
   };
 
-  onLoad() {
-    this.$parent.getUserInfo(user => {
-      this.user.avatar = user.avatar;
-      this.user.gender = user.gender;
-      this.user.nickname = user.nickname;
-      this.$apply();
+  async onLoad(options) {
+    const {
+      avatar,
+      gender,
+      nickname,
+      city,
+      country
+    } = await this.$parent.getUserInfo();
+
+    this.user.avatar = avatar;
+    this.user.gender = gender;
+    this.user.nickname = nickname;
+
+    const inviter = decodeURIComponent(options.scene); // 邀请者
+
+    // 更新用户资料
+    wepy.request({
+      data: {
+        city,
+        avatar,
+        gender,
+        inviter: inviter ? Number(inviter) : 0,
+        country,
+        nickname
+      },
+      method: 'OPTION',
+      url: `${BaseURL}/auth/user`,
+      header: await this.$parent.authHeader()
     });
   }
 
@@ -59,15 +81,6 @@ export default class Index extends wepy.page {
         this.user.title = res.data.title;
         this.user.record = res.data.record;
         this.$apply();
-
-        // dev: should compare and update
-        // 更新用户
-        // wepy.request({
-        //   method: 'OPTION',
-        //   data:{},
-        //   url: `${BaseURL}/auth/user`,
-        //   header: this.authHeader()
-        // });
       }
     });
   }
@@ -77,7 +90,7 @@ export default class Index extends wepy.page {
   }
 
   onShareAppMessage(res) {
-    return this.$parent.shareAppMessage()
+    return this.$parent.shareAppMessage();
   }
 
   onReady() {
@@ -96,20 +109,9 @@ export default class Index extends wepy.page {
 }
 </script>
 
-
 <style lang="less">
 @import '../variables';
 
-page {
-  font-family: -apple-system-font, Helvetica Neue, Helvetica, sans-serif;
-  font-size: 10pt;
-  line-height: 150%;
-  min-height: 100%;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
 .container {
   position: relative;
   flex: 1;
