@@ -1,37 +1,50 @@
 <template>
   <view class="container">
-    <view class="top-box">
-      <image class="logo" src="{{ user.avatar }}" />
-      <text class="level">称号：{{ user.title }}</text>
-      <text class="record">最高记录: {{ user.record }}分</text>
+    <view class="user-box">
+      <image class="logo" src="{{ user.avatar }}"/>
+      <text class="level" wx:if="{{ ranking > 0 }}">排名: 第 {{ ranking }}</text>
     </view>
-      <view class="content">
-        <view class="hd" style="transform:rotateZ({{angle}}deg);">
-          <image class="wave" src="/images/wave.png" mode="aspectFill" />
-          <image class="wave wave-bg" src="/images/wave.png" mode="aspectFill" />
-        </view>
-        <view class="bd">
-          <navigator url="/pages/action" class="btn" hover-class="btn-hover">开始表演</navigator>
-          <navigator url="/pages/circle" class="btn" hover-class="btn-hover">演 艺 圈</navigator>
-          <!-- <navigator url="/pages/preview?action=10" class="btn" hover-class="btn-hover">演艺生涯</navigator> -->
-          <text class="tail">试试你的演技值多少分</text>
-        </view>
+    <view class="content">
+      <view class="hd" style="transform:rotateZ({{angle}}deg);">
+        <image class="wave" src="/images/wave.png" mode="aspectFill" />
+        <image class="wave wave-bg" src="/images/wave.png" mode="aspectFill" />
       </view>
+      <view class="bd">
+        <scroll-view class="scroller">
+          <view class="leaderboards">
+            <repeat for="{{ leaderboards }}" key="index" index="index" item="friend">
+              <view class="friend-item">
+                <text class="number">{{ index + 1 }}. </text>
+                <image class="friend-avatar" src="{{ friend.avatar }}"/>
+                <view class="friend-item-right">
+                <text class="friend-nickname">{{ friend.nickname }}</text>
+                <text class="friend-title">{{ friend.title }} - {{ friend.record }}</text>
+                </view>
+              </view>
+            </repeat>
+          </view>
+         </scroll-view>
+        <text class="tail">多分享才能让朋友加入你的演艺圈</text>
+      </view>
+    </view>
   </view>
 </template>
 
 <script>
+// 演艺圈
 import wepy from 'wepy';
 import { BaseURL } from '../config';
-export default class Index extends wepy.page {
+export default class Circle extends wepy.page {
   config = {
-    navigationBarTitleText: '',
+    navigationBarTitleText: '演艺圈',
     enablePullDownRefresh: false,
     disableScroll: true,
     navigationBarBackgroundColor: '#69c3aa'
   };
 
   data = {
+    leaderboards: [], // 好友排行榜
+    ranking: 0, // 当前用户排名
     angle: 0,
     user: {
       title: '',
@@ -40,52 +53,25 @@ export default class Index extends wepy.page {
   };
 
   async onLoad(options) {
-    const {
-      avatar,
-      gender,
-      nickname,
-      city,
-      country
-    } = await this.$parent.getUserInfo();
-
+    this.getLeaderboards();
+    const { avatar } = await this.$parent.getUserInfo();
     this.user.avatar = avatar;
-    this.user.gender = gender;
-    this.user.nickname = nickname;
-
-    const inviter = decodeURIComponent(options.scene); // 邀请者
-
-    // 更新用户资料
-    wepy.request({
-      data: {
-        city,
-        avatar,
-        gender,
-        inviter: inviter ? Number(inviter) : 0,
-        country,
-        nickname
-      },
-      method: 'OPTION',
-      url: `${BaseURL}/auth/user`,
-      header: await this.$parent.authHeader()
-    });
   }
 
   // 获取用户数据
-  async getUserData() {
+  async getLeaderboards() {
     wepy.request({
       method: 'GET',
-      url: `${BaseURL}/auth/user`,
+      url: `${BaseURL}/auth/user/leaderboards`,
       header: await this.$parent.authHeader(),
       success: res => {
-        this.user.title = res.data.title;
-        this.user.record = res.data.record;
-        this.$apply();
+        if (res.data.leaderboards) {
+          this.ranking = res.data.ranking;
+          this.leaderboards = res.data.leaderboards;
+          this.$apply();
+        }
       }
     });
-  }
-
-  onShow() {
-    this.getUserData();
   }
 
   onShareAppMessage(res) {
@@ -120,8 +106,9 @@ export default class Index extends wepy.page {
   align-items: stretch;
   padding: 0;
   height: 100%;
+  width: 100%;
   overflow: hidden;
-  justify-content: space-between;
+  justify-content: space-around;
   box-sizing: border-box;
 }
 .content {
@@ -133,8 +120,6 @@ export default class Index extends wepy.page {
   align-items: stretch;
   justify-content: center;
   width: 100%;
-  margin-top: -300rpx;
-  padding-bottom: 500rpx;
   background: -webkit-gradient(
     linear,
     left top,
@@ -148,12 +133,27 @@ export default class Index extends wepy.page {
   animation: rise 3s cubic-bezier(0.19, 1, 0.22, 1) 0.25s forwards;
 }
 
-.top-box {
-  flex: 1;
+.user-box {
+  position: absolute;
+  top: 3vh;
+  left: 3vh;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+}
+
+.logo {
+  z-index: 2;
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 160rpx;
+  opacity: 0.95;
+}
+
+.level {
+  color: @white;
+  padding-left: 20rpx;
+  line-height: 160rpx;
+  font-size: 16pt;
+  font-weight: bold;
 }
 
 @keyframes rise {
@@ -188,15 +188,7 @@ export default class Index extends wepy.page {
   height: 200rpx;
   transition: all 0.35s ease;
 }
-.logo {
-  z-index: 2;
-  width: 160rpx;
-  height: 160rpx;
-  margin: 0 auto;
-  border-radius: 160rpx;
-  opacity: 0.95;
-  margin-top: 20%;
-}
+
 @keyframes sway {
   0% {
     transform: translate3d(0, 20rpx, 0) rotate(-15deg);
@@ -226,7 +218,7 @@ export default class Index extends wepy.page {
   right: 0;
   bottom: 0;
   opacity: 0.725;
-  height: 260rpx;
+  height: 450rpx;
   width: 2250rpx;
   animation: wave 10s linear infinite;
 }
@@ -256,6 +248,7 @@ export default class Index extends wepy.page {
   flex: 1;
   display: flex;
   flex-direction: column;
+  margin-top: -150rpx;
   align-items: stretch;
   animation: bd-rise 2s cubic-bezier(0.23, 1, 0.32, 1) 0.75s forwards;
   opacity: 0;
@@ -273,26 +266,53 @@ export default class Index extends wepy.page {
 
 .tail {
   width: 100%;
-  position: fixed;
-  bottom: 0;
+  position: absolute;
+  top: 70vh;
   display: flex;
   justify-content: space-around;
-  font-size: 28rpx;
+  font-size: 10pt;
   color: #999;
-  text-align: center;
-}
-
-.level {
-  padding: 20px;
-  color: @white;
-  font-size: 18pt;
-  font-weight: bold;
   text-align: center;
 }
 
 .record {
   font-size: 14pt;
   color: @white;
+}
+.scroller {
+  height: 70vh;
+}
+.leaderboards {
+  color: @green;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.friend-item {
+  display: flex;
+  padding: 20rpx 0;
+}
+.number {
+  font-size: 25pt;
+  line-height: 100rpx;
+  font-weight: bold;
+}
+.friend-avatar {
+  width: 100rpx;
+  margin-left: 10rpx;
+  height: 100rpx;
+  border-radius: 100rpx;
+  border: 1rpx solid @green;
+}
+
+.friend-item-right {
+  margin-left: 15rpx;
+  line-height: 50rpx;
+  display: flex;
+  flex-direction: column;
+  font-size: 15pt;
 }
 </style>
 

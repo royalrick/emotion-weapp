@@ -5,7 +5,7 @@ import 'wepy-async-function';
 
 export default class extends wepy.app {
   config = {
-    pages: ['pages/index', 'pages/action', 'pages/preview'],
+    pages: ['pages/index', 'pages/action', 'pages/preview', 'pages/circle'],
     window: {
       backgroundTextStyle: 'light',
       navigationBarBackgroundColor: '#69c3aa',
@@ -145,7 +145,7 @@ export default class extends wepy.app {
   // 全局分享设置
   shareAppMessage(src = null) {
     const content = {
-      title: '测测你的演技值多少分',
+      title: '试试你的演技值多少分',
       path: '/pages/index',
       fail: res => {
         wepy.showToast({
