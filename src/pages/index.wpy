@@ -52,19 +52,17 @@ export default class Index extends wepy.page {
     this.user.gender = gender;
     this.user.nickname = nickname;
 
-    const inviter = decodeURIComponent(options.scene); // 邀请者
-
     // 更新用户资料
     wepy.request({
       data: {
         city,
         avatar,
         gender,
-        inviter: inviter ? Number(inviter) : 0,
+        inviter: !options.scene ? 0 : Number(decodeURIComponent(options.scene)), // 邀请者
         country,
         nickname
       },
-      method: 'OPTION',
+      method: 'OPTIONS',
       url: `${BaseURL}/auth/user`,
       header: await this.$parent.authHeader()
     });
