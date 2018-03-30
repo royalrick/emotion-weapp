@@ -10,7 +10,7 @@
         <image class="wave wave-bg" src="/images/wave.png" mode="aspectFill" />
       </view>
       <view class="bd">
-        <scroll-view class="scroller">
+        <scroll-view class="scroller" scroll-y>
           <view class="leaderboards">
             <repeat for="{{ leaderboards }}" key="index" index="index" item="friend">
               <view class="friend-item">
