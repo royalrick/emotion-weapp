@@ -58,11 +58,14 @@ export default class Index extends wepy.page {
         city,
         avatar,
         gender,
-        inviter: !options.scene ? 0 : Number(decodeURIComponent(options.scene)), // 邀请者
+        // 邀请者
+        inviter:
+          (!options.scene ? 0 : Number(decodeURIComponent(options.scene))) ||
+          (!options.inviter ? 0 : Number(options.inviter)),
         country,
         nickname
       },
-      method: 'OPTIONS',
+      method: 'POST',
       url: `${BaseURL}/auth/user`,
       header: await this.$parent.authHeader()
     });
@@ -77,6 +80,7 @@ export default class Index extends wepy.page {
       success: res => {
         this.user.title = res.data.title;
         this.user.record = res.data.record;
+        this.$parent.globalData.user.id = res.data.id;
         this.$apply();
       }
     });

@@ -16,7 +16,14 @@ export default class extends wepy.app {
 
   globalData = {
     token: '', // JWT token
-    user: null,
+    user: {
+      id: 0,
+      city: '',
+      gender: 0,
+      avatar: '',
+      country: '',
+      nickname: ''
+    },
     appCode: '' // 小程序码本地存放路径
   };
 
@@ -88,7 +95,7 @@ export default class extends wepy.app {
 
   getUserInfo() {
     return new Promise(resolve => {
-      if (this.globalData.user) {
+      if (this.globalData.user.nickname) {
         resolve(this.globalData.user);
         return;
       }
@@ -96,13 +103,11 @@ export default class extends wepy.app {
       wepy.getUserInfo({
         success: res => {
           const { avatarUrl, gender, nickName, city, country } = res.userInfo;
-          this.globalData.user = {
-            city,
-            gender,
-            country,
-            avatar: avatarUrl,
-            nickname: nickName
-          };
+          this.globalData.user.city = city;
+          this.globalData.user.gender = gender;
+          this.globalData.user.country = country;
+          this.globalData.user.avatar = avatarUrl;
+          this.globalData.user.nickname = nickName;
           resolve(this.globalData.user);
         }
       });
@@ -143,10 +148,12 @@ export default class extends wepy.app {
   }
 
   // 全局分享设置
-  shareAppMessage(src = null) {
-    const content = {
+  // imageUrl 分享图片路径
+  shareAppMessage(imageUrl = null) {
+    return {
+      path: `/pages/index?inviter=${this.globalData.user.id}`,
+      imageUrl,
       title: '试试你的演技值多少分',
-      path: '/pages/index',
       fail: res => {
         wepy.showToast({
           title: '装逼失败 请重试',
@@ -154,12 +161,6 @@ export default class extends wepy.app {
         });
       }
     };
-
-    if (src) {
-      content.imageUrl = src;
-    }
-
-    return content;
   }
 }
 </script>
