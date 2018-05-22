@@ -14,6 +14,7 @@
           <navigator url="/pages/action" class="btn" hover-class="btn-hover">开始表演</navigator>
           <navigator url="/pages/circle" class="btn" hover-class="btn-hover">演 艺 圈</navigator>
           <!-- <navigator url="/pages/preview?action=10" class="btn" hover-class="btn-hover">演艺生涯</navigator> -->
+          <button open-type="contact" class="btn btn-contact" hover-class="btn-hover">联系作者</button>
           <text class="tail">试试你的演技值多少分</text>
         </view>
       </view>
@@ -112,6 +113,12 @@ export default class Index extends wepy.page {
 
 <style lang="less">
 @import '../variables';
+
+.btn-contact{
+  background: @white;
+  color: @green;
+  border: 1px solid @green;
+}
 
 .container {
   position: relative;

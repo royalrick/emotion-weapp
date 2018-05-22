@@ -16,6 +16,7 @@ export default class extends wepy.app {
 
   globalData = {
     token: '', // JWT token
+    uptoken: '', // 七牛文件上传 token
     user: {
       id: 0,
       city: '',
@@ -81,6 +82,7 @@ export default class extends wepy.app {
   authHeader() {
     return new Promise(resolve => {
       if (!this.globalData.token) {
+        // dev: 判断是否过期
         const timer = setInterval(() => {
           if (this.globalData.token) {
             resolve({ Authorization: `Bearer ${this.globalData.token}` });
@@ -89,6 +91,31 @@ export default class extends wepy.app {
         }, 50);
       } else {
         resolve({ Authorization: `Bearer ${this.globalData.token}` });
+      }
+    });
+  }
+
+  // 获取七牛上传图片token
+  async uptoken() {
+    return new Promise(async resolve => {
+      if (!this.globalData.uptoken) {
+        // dev: 判断是否过期
+        wepy.request({
+          method: 'GET',
+          url: `${BaseURL}/auth/uptoken`,
+          header: await this.authHeader(),
+          success: res => {
+            this.globalData.uptoken = {
+              token: res.data.token,
+              expire: res.data.expire,
+              region: res.data.region,
+              domain: res.data.domain
+            };
+            resolve(this.globalData.uptoken);
+          }
+        });
+      } else {
+        resolve(this.globalData.uptoken);
       }
     });
   }
