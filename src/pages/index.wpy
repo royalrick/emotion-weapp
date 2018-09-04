@@ -14,7 +14,8 @@
           <navigator url="/pages/action" class="btn" hover-class="btn-hover">开始表演</navigator>
           <navigator url="/pages/circle" class="btn" hover-class="btn-hover">演 艺 圈</navigator>
           <!-- <navigator url="/pages/preview?action=10" class="btn" hover-class="btn-hover">演艺生涯</navigator> -->
-          <button open-type="contact" class="btn btn-contact" hover-class="btn-hover">联系作者</button>
+          <!-- <button open-type="contact" class="btn btn-contact" hover-class="btn-hover">联系作者</button> -->
+          <navigator target="miniProgram" app-id="wx7ad9cfdc85a2fdb2" extra-data="" class="btn btn-contact" hover-class="btn-hover">原始部落</navigator>
           <text class="tail">试试你的演技值多少分</text>
         </view>
       </view>

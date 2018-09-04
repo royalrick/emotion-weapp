@@ -223,7 +223,7 @@ export default class Action extends wepy.page {
     // 上传数据
     wepy.request({
       method: 'POST',
-      url: `${BaseURL}/auth/actions/v2`,
+      url: `${BaseURL}/auth/actions`,
       data: data,
       header: await this.$parent.authHeader(),
       success: res => {
