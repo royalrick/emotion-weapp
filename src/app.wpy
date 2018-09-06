@@ -1,7 +1,7 @@
 <script>
-import wepy from 'wepy';
-import { BaseURL } from './config';
-import 'wepy-async-function';
+import wepy from 'wepy'
+import { BaseURL } from './config'
+import 'wepy-async-function'
 
 export default class extends wepy.app {
   config = {
@@ -12,7 +12,7 @@ export default class extends wepy.app {
       navigationBarTitleText: '表情演员',
       navigationBarTextStyle: 'white'
     }
-  };
+  }
 
   globalData = {
     token: '', // JWT token
@@ -26,18 +26,18 @@ export default class extends wepy.app {
       nickname: ''
     },
     appCode: '' // 小程序码本地存放路径
-  };
+  }
 
   constructor() {
-    super();
-    this.use('requestfix');
+    super()
+    this.use('requestfix')
   }
 
   async onLaunch() {
-    wepy.showShareMenu();
-    const expire = await this.checkAuth();
+    wepy.showShareMenu()
+    const expire = await this.checkAuth()
     if (!this.globalData.token || expire) {
-      this.globalData.token = await this.login();
+      this.globalData.token = await this.login()
     }
   }
 
@@ -46,13 +46,13 @@ export default class extends wepy.app {
     return new Promise((resolve, reject) => {
       wepy.checkSession({
         success() {
-          resolve(false);
+          resolve(false)
         },
         fail() {
-          resolve(true);
+          resolve(true)
         }
-      });
-    });
+      })
+    })
   }
 
   // 登录
@@ -68,14 +68,17 @@ export default class extends wepy.app {
               data: { code: res.code },
               success: res => {
                 if (res.data.token) {
-                  resolve(res.data.token);
+                  resolve(res.data.token)
                 }
+              },
+              fail: err => {
+                console.error(err)
               }
-            });
+            })
           }
         }
-      });
-    });
+      })
+    })
   }
 
   // 同步获取授权认证请求头
@@ -85,14 +88,14 @@ export default class extends wepy.app {
         // dev: 判断是否过期
         const timer = setInterval(() => {
           if (this.globalData.token) {
-            resolve({ Authorization: `Bearer ${this.globalData.token}` });
-            clearInterval(timer);
+            resolve({ Authorization: `Bearer ${this.globalData.token}` })
+            clearInterval(timer)
           }
-        }, 50);
+        }, 50)
       } else {
-        resolve({ Authorization: `Bearer ${this.globalData.token}` });
+        resolve({ Authorization: `Bearer ${this.globalData.token}` })
       }
-    });
+    })
   }
 
   // 获取七牛上传图片token
@@ -110,41 +113,41 @@ export default class extends wepy.app {
               expire: res.data.expire,
               region: res.data.region,
               domain: res.data.domain
-            };
-            resolve(this.globalData.uptoken);
+            }
+            resolve(this.globalData.uptoken)
           }
-        });
+        })
       } else {
-        resolve(this.globalData.uptoken);
+        resolve(this.globalData.uptoken)
       }
-    });
+    })
   }
 
   getUserInfo() {
     return new Promise(resolve => {
       if (this.globalData.user.nickname) {
-        resolve(this.globalData.user);
-        return;
+        resolve(this.globalData.user)
+        return
       }
 
       wepy.getUserInfo({
         success: res => {
-          const { avatarUrl, gender, nickName, city, country } = res.userInfo;
-          this.globalData.user.city = city;
-          this.globalData.user.gender = gender;
-          this.globalData.user.country = country;
-          this.globalData.user.avatar = avatarUrl;
-          this.globalData.user.nickname = nickName;
-          resolve(this.globalData.user);
+          const { avatarUrl, gender, nickName, city, country } = res.userInfo
+          this.globalData.user.city = city
+          this.globalData.user.gender = gender
+          this.globalData.user.country = country
+          this.globalData.user.avatar = avatarUrl
+          this.globalData.user.nickname = nickName
+          resolve(this.globalData.user)
         }
-      });
-    });
+      })
+    })
   }
 
   getAppCode() {
     return new Promise(async resolve => {
       if (this.globalData.appCode) {
-        resolve(this.globalData.appCode);
+        resolve(this.globalData.appCode)
       } else {
         wepy.request({
           method: 'GET',
@@ -160,18 +163,18 @@ export default class extends wepy.app {
                     wepy.saveFile({
                       tempFilePath: res.tempFilePath,
                       success: res => {
-                        this.globalData.appCode = res.savedFilePath;
-                        resolve(res.savedFilePath);
+                        this.globalData.appCode = res.savedFilePath
+                        resolve(res.savedFilePath)
                       }
-                    });
+                    })
                   }
                 }
-              });
+              })
             }
           }
-        });
+        })
       }
-    });
+    })
   }
 
   // 全局分享设置
@@ -185,9 +188,9 @@ export default class extends wepy.app {
         wepy.showToast({
           title: '装逼失败 请重试',
           icon: 'none'
-        });
+        })
       }
-    };
+    }
   }
 }
 </script>

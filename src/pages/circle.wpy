@@ -1,7 +1,7 @@
 <template>
   <view class="container">
     <view class="user-box">
-      <image class="logo" src="{{ user.avatar }}"/>
+      <image class="logo" src="{{ user.avatar }}" />
       <text class="level" wx:if="{{ ranking > 0 }}">排名: 第 {{ ranking }}</text>
     </view>
     <view class="content">
@@ -15,15 +15,15 @@
             <repeat for="{{ leaderboards }}" key="index" index="index" item="friend">
               <view class="friend-item">
                 <text class="number">{{ index + 1 }}. </text>
-                <image class="friend-avatar" src="{{ friend.avatar }}"/>
+                <image class="friend-avatar" src="{{ friend.avatar }}" />
                 <view class="friend-item-right">
-                <text class="friend-nickname">{{ friend.nickname }}</text>
-                <text class="friend-title">{{ friend.title }} - {{ friend.record }}</text>
+                  <text class="friend-nickname">{{ friend.nickname }}</text>
+                  <text class="friend-title">{{ friend.title }} - {{ friend.record }}</text>
                 </view>
               </view>
             </repeat>
           </view>
-         </scroll-view>
+        </scroll-view>
         <text class="tail">多分享才能让朋友加入你的演艺圈</text>
       </view>
     </view>
@@ -32,15 +32,15 @@
 
 <script>
 // 演艺圈
-import wepy from 'wepy';
-import { BaseURL } from '../config';
+import wepy from 'wepy'
+import { BaseURL } from '../config'
 export default class Circle extends wepy.page {
   config = {
     navigationBarTitleText: '演艺圈',
     enablePullDownRefresh: false,
     disableScroll: true,
     navigationBarBackgroundColor: '#69c3aa'
-  };
+  }
 
   data = {
     leaderboards: [], // 好友排行榜
@@ -50,12 +50,12 @@ export default class Circle extends wepy.page {
       title: '',
       record: 0
     }
-  };
+  }
 
   async onLoad(options) {
-    this.getLeaderboards();
-    const { avatar } = await this.$parent.getUserInfo();
-    this.user.avatar = avatar;
+    this.getLeaderboards()
+    const { avatar } = await this.$parent.getUserInfo()
+    this.user.avatar = avatar
   }
 
   // 获取用户数据
@@ -66,30 +66,30 @@ export default class Circle extends wepy.page {
       header: await this.$parent.authHeader(),
       success: res => {
         if (res.data.leaderboards) {
-          this.ranking = res.data.ranking;
-          this.leaderboards = res.data.leaderboards;
-          this.$apply();
+          this.ranking = res.data.ranking
+          this.leaderboards = res.data.leaderboards
+          this.$apply()
         }
       }
-    });
+    })
   }
 
   onShareAppMessage(res) {
-    return this.$parent.shareAppMessage();
+    return this.$parent.shareAppMessage()
   }
 
   onReady() {
     wepy.onAccelerometerChange(res => {
-      var angle = -(res.x * 30).toFixed(1);
+      var angle = -(res.x * 30).toFixed(1)
       if (angle > 14) {
-        angle = 14;
+        angle = 14
       } else if (angle < -14) {
-        angle = -14;
+        angle = -14
       }
       if (this.angle !== angle) {
-        this.angle = angle;
+        this.angle = angle
       }
-    });
+    })
   }
 }
 </script>
@@ -284,11 +284,8 @@ export default class Circle extends wepy.page {
 }
 .leaderboards {
   color: @green;
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  padding: 0 5vw;
+  width: 90vw;
 }
 .friend-item {
   display: flex;

@@ -5,33 +5,33 @@
       <text class="level">称号：{{ user.title }}</text>
       <text class="record">最高记录: {{ user.record }}分</text>
     </view>
-      <view class="content">
-        <view class="hd" style="transform:rotateZ({{angle}}deg);">
-          <image class="wave" src="/images/wave.png" mode="aspectFill" />
-          <image class="wave wave-bg" src="/images/wave.png" mode="aspectFill" />
-        </view>
-        <view class="bd">
-          <navigator url="/pages/action" class="btn" hover-class="btn-hover">开始表演</navigator>
-          <navigator url="/pages/circle" class="btn" hover-class="btn-hover">演 艺 圈</navigator>
-          <!-- <navigator url="/pages/preview?action=10" class="btn" hover-class="btn-hover">演艺生涯</navigator> -->
-          <!-- <button open-type="contact" class="btn btn-contact" hover-class="btn-hover">联系作者</button> -->
-          <navigator target="miniProgram" app-id="wx7ad9cfdc85a2fdb2" extra-data="" class="btn btn-contact" hover-class="btn-hover">原始部落</navigator>
-          <text class="tail">试试你的演技值多少分</text>
-        </view>
+    <view class="content">
+      <view class="hd" style="transform:rotateZ({{angle}}deg);">
+        <image class="wave" src="/images/wave.png" mode="aspectFill" />
+        <image class="wave wave-bg" src="/images/wave.png" mode="aspectFill" />
       </view>
+      <view class="bd">
+        <navigator url="/pages/action" class="btn" hover-class="btn-hover">开始表演</navigator>
+        <navigator url="/pages/circle" class="btn" hover-class="btn-hover">演 艺 圈</navigator>
+        <!-- <navigator url="/pages/preview?action=10" class="btn" hover-class="btn-hover">演艺生涯</navigator> -->
+        <!-- <button open-type="contact" class="btn btn-contact" hover-class="btn-hover">联系作者</button> -->
+        <navigator target="miniProgram" app-id="wx7ad9cfdc85a2fdb2" class="btn btn-contact" hover-class="btn-hover">原始部落</navigator>
+        <text class="tail">试试你的演技值多少分</text>
+      </view>
+    </view>
   </view>
 </template>
 
 <script>
-import wepy from 'wepy';
-import { BaseURL } from '../config';
+import wepy from 'wepy'
+import { BaseURL } from '../config'
 export default class Index extends wepy.page {
   config = {
     navigationBarTitleText: '',
     enablePullDownRefresh: false,
     disableScroll: true,
     navigationBarBackgroundColor: '#69c3aa'
-  };
+  }
 
   data = {
     angle: 0,
@@ -39,7 +39,7 @@ export default class Index extends wepy.page {
       title: '',
       record: 0
     }
-  };
+  }
 
   async onLoad(options) {
     const {
@@ -48,11 +48,11 @@ export default class Index extends wepy.page {
       nickname,
       city,
       country
-    } = await this.$parent.getUserInfo();
+    } = await this.$parent.getUserInfo()
 
-    this.user.avatar = avatar;
-    this.user.gender = gender;
-    this.user.nickname = nickname;
+    this.user.avatar = avatar
+    this.user.gender = gender
+    this.user.nickname = nickname
 
     // 更新用户资料
     wepy.request({
@@ -70,7 +70,7 @@ export default class Index extends wepy.page {
       method: 'POST',
       url: `${BaseURL}/auth/user`,
       header: await this.$parent.authHeader()
-    });
+    })
   }
 
   // 获取用户数据
@@ -80,34 +80,34 @@ export default class Index extends wepy.page {
       url: `${BaseURL}/auth/user`,
       header: await this.$parent.authHeader(),
       success: res => {
-        this.user.title = res.data.title;
-        this.user.record = res.data.record;
-        this.$parent.globalData.user.id = res.data.id;
-        this.$apply();
+        this.user.title = res.data.title
+        this.user.record = res.data.record
+        this.$parent.globalData.user.id = res.data.id
+        this.$apply()
       }
-    });
+    })
   }
 
   onShow() {
-    this.getUserData();
+    this.getUserData()
   }
 
   onShareAppMessage(res) {
-    return this.$parent.shareAppMessage();
+    return this.$parent.shareAppMessage()
   }
 
   onReady() {
     wepy.onAccelerometerChange(res => {
-      var angle = -(res.x * 30).toFixed(1);
+      var angle = -(res.x * 30).toFixed(1)
       if (angle > 14) {
-        angle = 14;
+        angle = 14
       } else if (angle < -14) {
-        angle = -14;
+        angle = -14
       }
       if (this.angle !== angle) {
-        this.angle = angle;
+        this.angle = angle
       }
-    });
+    })
   }
 }
 </script>
@@ -115,7 +115,7 @@ export default class Index extends wepy.page {
 <style lang="less">
 @import '../variables';
 
-.btn-contact{
+.btn-contact {
   background: @white;
   color: @green;
   border: 1px solid @green;
