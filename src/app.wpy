@@ -35,8 +35,8 @@ export default class extends wepy.app {
 
   async onLaunch() {
     wepy.showShareMenu()
-    const expire = await this.checkAuth()
-    if (!this.globalData.token || expire) {
+    const expired = await this.checkAuth()
+    if (!this.globalData.token || expired) {
       this.globalData.token = await this.login()
     }
   }
